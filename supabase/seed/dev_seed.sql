@@ -91,10 +91,10 @@ begin
   end loop;
 
   -- ---------- Groups ----------
-  insert into groups (id, ministry_id, name, status, meeting_day, created_at) values
-    (grp_a, m, 'Tuesday Morning Group', 'active',  'Tuesday',  now() - interval '110 days'),
-    (grp_b, m, 'Thursday Night Group',  'active',  'Thursday', now() - interval '110 days'),
-    (grp_c, m, 'Young Men''s Group',    'forming', 'Saturday', now() - interval '6 days');
+  insert into groups (id, ministry_id, name, status, meeting_day, meeting_time, created_at) values
+    (grp_a, m, 'Tuesday Morning Group', 'active',  'Tuesday',  '07:00', now() - interval '110 days'),
+    (grp_b, m, 'Thursday Night Group',  'active',  'Thursday', '19:00', now() - interval '110 days'),
+    (grp_c, m, 'Young Men''s Group',    'forming', 'Saturday', '11:30', now() - interval '6 days');
 
   insert into group_members (ministry_id, group_id, profile_id, is_group_leader, joined_at)
   select m, grp, id, leads, now() - make_interval(days => joined_days)

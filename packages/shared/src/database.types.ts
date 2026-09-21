@@ -277,6 +277,7 @@ export type Database = {
           created_at: string
           id: string
           meeting_day: string | null
+          meeting_time: string | null
           ministry_id: string
           name: string
           status: Database["public"]["Enums"]["group_status"]
@@ -285,6 +286,7 @@ export type Database = {
           created_at?: string
           id?: string
           meeting_day?: string | null
+          meeting_time?: string | null
           ministry_id: string
           name: string
           status?: Database["public"]["Enums"]["group_status"]
@@ -293,6 +295,7 @@ export type Database = {
           created_at?: string
           id?: string
           meeting_day?: string | null
+          meeting_time?: string | null
           ministry_id?: string
           name?: string
           status?: Database["public"]["Enums"]["group_status"]
@@ -1279,7 +1282,12 @@ export type Database = {
         Args: { p_ministry: string }
         Returns: Database["public"]["Enums"]["ministry_role"]
       }
+      fn_ministry_timezone: { Args: { p_ministry: string }; Returns: string }
       fn_open_signup: { Args: { p_ministry: string }; Returns: boolean }
+      generate_meetings: {
+        Args: { p_ministry: string; p_weeks?: number }
+        Returns: number
+      }
       join_ministry: {
         Args: { p_full_name: string; p_ministry: string; p_phone?: string }
         Returns: string
@@ -1292,9 +1300,25 @@ export type Database = {
           organization_name: string
         }[]
       }
+      mark_attendance: {
+        Args: { p_excused?: string[]; p_meeting: string; p_present: string[] }
+        Returns: undefined
+      }
+      place_member: {
+        Args: { p_group: string; p_profile: string }
+        Returns: undefined
+      }
       redeem_invite: {
         Args: { p_code: string; p_full_name?: string; p_phone?: string }
         Returns: string
+      }
+      set_group_leader: {
+        Args: {
+          p_group: string
+          p_profile: string
+          p_role: Database["public"]["Enums"]["ministry_role"]
+        }
+        Returns: undefined
       }
     }
     Enums: {

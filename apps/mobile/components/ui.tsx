@@ -111,6 +111,16 @@ export function Button({
   );
 }
 
+export function Card({ title, children }: { title?: string; children: ReactNode }) {
+  const c = useColors();
+  return (
+    <View style={[styles.card, { borderColor: c.border, backgroundColor: c.field }]}>
+      {title ? <Text style={[styles.cardTitle, { color: c.text }]}>{title}</Text> : null}
+      {children}
+    </View>
+  );
+}
+
 export function Loading() {
   const c = useColors();
   return (
@@ -132,4 +142,6 @@ const styles = StyleSheet.create({
   input: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16 },
   button: { borderRadius: 10, paddingVertical: 14, alignItems: "center", minHeight: 48, justifyContent: "center" },
   buttonText: { fontSize: 16, fontWeight: "600" },
+  card: { borderWidth: 1, borderRadius: 12, padding: 16, gap: 8 },
+  cardTitle: { fontSize: 17, fontWeight: "700" },
 });

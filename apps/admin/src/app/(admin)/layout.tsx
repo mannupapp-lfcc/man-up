@@ -1,0 +1,31 @@
+import Link from "next/link";
+import { requireAdmin } from "@/lib/admin";
+import { signOut } from "../login/actions";
+
+const NAV = [
+  { href: "/groups", label: "Groups" },
+  { href: "/people", label: "People" },
+  { href: "/invites", label: "Invite codes" },
+] as const;
+
+export default async function AdminLayout({ children }: LayoutProps<"/">) {
+  const { ministryName } = await requireAdmin();
+  return (
+    <div className="flex flex-1 flex-col">
+      <header className="border-b border-neutral-200 dark:border-neutral-800">
+        <nav className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
+          <span className="font-bold">{ministryName} Admin</span>
+          {NAV.map((n) => (
+            <Link key={n.href} href={n.href} className="text-sm hover:underline">
+              {n.label}
+            </Link>
+          ))}
+          <form action={signOut} className="ml-auto">
+            <button type="submit" className="text-sm text-neutral-500 hover:underline">Sign out</button>
+          </form>
+        </nav>
+      </header>
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">{children}</main>
+    </div>
+  );
+}
