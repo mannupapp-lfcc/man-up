@@ -17,7 +17,10 @@ export default function AppLayout() {
         headerShown: false,
         tabBarActiveTintColor: colors.gold,
         tabBarInactiveTintColor: colors.muted,
-        tabBarStyle: { backgroundColor: colors.bg, borderTopColor: colors.border },
+        // Let the navigator size icons, labels, and system navigation insets.
+        // Extra padding here squeezes the fixed-height tab content on Android.
+        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
+        headerShadowVisible: false,
         sceneStyle: { backgroundColor: colors.bg },
       }}
     >

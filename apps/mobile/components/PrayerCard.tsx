@@ -29,7 +29,7 @@ export function PrayerCard({
           {r.visibility === "ministry" ? "Whole ministry" : "My group"} - {timeAgo(r.createdAt)}
         </Text>
       </View>
-      <Text style={{ color: c.text, fontSize: 16, lineHeight: 22 }} numberOfLines={full ? undefined : 5}>
+      <Text style={{ color: c.text, fontSize: 16, lineHeight: 25 }} numberOfLines={full ? undefined : 5}>
         {r.body}
       </Text>
       {r.answered ? (
@@ -56,9 +56,9 @@ export function PrayerCard({
 }
 
 const styles = StyleSheet.create({
-  card: { borderWidth: 1, borderRadius: 12, padding: 14, gap: 10 },
+  card: { borderWidth: 1, borderRadius: 22, padding: 20, gap: 16 },
   meta: { flexDirection: "row", justifyContent: "space-between", flexWrap: "wrap", gap: 6 },
   answered: { borderLeftWidth: 3, paddingLeft: 10, gap: 2 },
-  actions: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  pill: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, minHeight: 40, justifyContent: "center" },
+  actions: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 },
+  pill: { borderWidth: 1, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, minHeight: 48, justifyContent: "center" },
 });

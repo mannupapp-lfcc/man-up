@@ -1,11 +1,13 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { PrayerCard } from "@/components/PrayerCard";
 import { openSafetyMenu } from "@/components/safety";
-import { Body, Button, Loading, Screen } from "@/components/ui";
+import { Body, Button, Eyebrow, Loading, Screen, Title } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { setPrayed, usePrayerWall } from "@/lib/pray";
+
+import { colors } from "@/lib/theme";
 
 type Filter = "all" | "group" | "ministry";
 
@@ -28,16 +30,18 @@ export default function PrayerWall() {
 
   return (
     <Screen>
+      <Eyebrow>Stand together</Eyebrow>
+      <Title>No man stands alone.</Title>
+      <Body muted>Bring what’s on your heart. Lift up a brother.</Body>
       <Button title="Share a prayer request" onPress={() => router.push("/pray/new")} />
       <View style={styles.filters}>
         {(["all", "group", "ministry"] as const).map((f) => (
-          <View key={f} style={styles.filter}>
-            <Button
-              title={f === "all" ? "All" : f === "group" ? "My group" : "Ministry"}
-              variant={filter === f ? "primary" : "secondary"}
-              onPress={() => setFilter(f)}
-            />
-          </View>
+          <Pressable key={f} accessibilityRole="button" accessibilityState={{ selected: filter === f }}
+            onPress={() => setFilter(f)} style={({ pressed }) => [styles.filter, filter === f && styles.selected, pressed && { opacity: 0.75 }]}>
+            <Text style={{ color: filter === f ? colors.gold : colors.muted, fontSize: 14, fontWeight: "700", textAlign: "center" }}>
+              {f === "all" ? "All" : f === "group" ? "My group" : "Ministry"}
+            </Text>
+          </Pressable>
         ))}
       </View>
       {shown.length === 0 ? <Body muted>No prayer requests yet. Be the first to share one.</Body> : null}
@@ -61,6 +65,7 @@ export default function PrayerWall() {
 }
 
 const styles = StyleSheet.create({
-  filters: { flexDirection: "row", gap: 8 },
-  filter: { flex: 1 },
+  filters: { flexDirection: "row", gap: 4, padding: 4, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  filter: { flex: 1, minHeight: 48, padding: 10, alignItems: "center", justifyContent: "center", borderRadius: 12 },
+  selected: { backgroundColor: colors.navy },
 });
