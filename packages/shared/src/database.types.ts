@@ -142,30 +142,45 @@ export type Database = {
       }
       gatherings: {
         Row: {
+          canceled: boolean
           church_center_url: string | null
           created_at: string
+          ends_at: string | null
           gathering_at: string
           id: string
+          location: string | null
           ministry_id: string
           pco_event_id: string | null
+          pco_group_event_id: string | null
+          synced_at: string | null
           title: string
         }
         Insert: {
+          canceled?: boolean
           church_center_url?: string | null
           created_at?: string
+          ends_at?: string | null
           gathering_at: string
           id?: string
+          location?: string | null
           ministry_id: string
           pco_event_id?: string | null
+          pco_group_event_id?: string | null
+          synced_at?: string | null
           title: string
         }
         Update: {
+          canceled?: boolean
           church_center_url?: string | null
           created_at?: string
+          ends_at?: string | null
           gathering_at?: string
           id?: string
+          location?: string | null
           ministry_id?: string
           pco_event_id?: string | null
+          pco_group_event_id?: string | null
+          synced_at?: string | null
           title?: string
         }
         Relationships: [
@@ -765,6 +780,7 @@ export type Database = {
           event_at: string
           id: string
           ministry_id: string
+          pco_check_in_id: string | null
           pco_event_id: string
           pco_person_id: string
           synced_at: string
@@ -773,6 +789,7 @@ export type Database = {
           event_at: string
           id?: string
           ministry_id: string
+          pco_check_in_id?: string | null
           pco_event_id: string
           pco_person_id: string
           synced_at?: string
@@ -781,6 +798,7 @@ export type Database = {
           event_at?: string
           id?: string
           ministry_id?: string
+          pco_check_in_id?: string | null
           pco_event_id?: string
           pco_person_id?: string
           synced_at?: string
@@ -1256,6 +1274,11 @@ export type Database = {
           ministry_name: string
           role: Database["public"]["Enums"]["ministry_role"]
         }[]
+      }
+      clear_pco_match: { Args: { p_profile: string }; Returns: undefined }
+      confirm_pco_match: {
+        Args: { p_pco_person_id: string; p_profile: string }
+        Returns: undefined
       }
       fn_can_read_profile: { Args: { p_profile: string }; Returns: boolean }
       fn_ensure_membership: {

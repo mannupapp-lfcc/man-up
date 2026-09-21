@@ -59,6 +59,7 @@ pnpm workspaces. Root .npmrc has `node-linker=hoisted` (required for Expo in a p
 pnpm install
 pnpm --filter mobile start          # expo start (use a development build, not Expo Go)
 pnpm --filter admin dev             # next dev
+npx inngest-cli@latest dev          # local Inngest dev server (set INNGEST_DEV=1 in apps/admin/.env.local)
 pnpm exec supabase migration new <name>   # new migration file; never edit an applied one
 pnpm test:db                        # pgTAP tests against lfcc-manup; pending migrations applied
                                     # inside the test transaction, everything rolled back

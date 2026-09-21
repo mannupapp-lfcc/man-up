@@ -1,14 +1,17 @@
 import { router } from "expo-router";
 import { Body, Button, Card, Screen, Title } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
+import { formatGathering, nextGathering, useGatherings } from "@/lib/gatherings";
 import { formatMeeting, useMyGroup } from "@/lib/group";
 
 export default function Home() {
   const { state } = useAuth();
   const { state: group } = useMyGroup();
+  const { state: gatherings } = useGatherings();
   if (state.status !== "ready") return null;
 
   const next = group.status === "ready" ? group.group?.upcoming[0] : undefined;
+  const gathering = gatherings.status === "ready" ? nextGathering(gatherings.upcoming) : undefined;
 
   return (
     <Screen>
@@ -16,7 +19,14 @@ export default function Home() {
       <Body muted>{state.membership.ministryName}</Body>
 
       <Card title="Next gathering">
-        <Body muted>Saturday gatherings will show here, with a link to register on Church Center.</Body>
+        {gathering ? (
+          <>
+            <Body>{gathering.title}</Body>
+            <Body muted>{formatGathering(gathering)}</Body>
+          </>
+        ) : (
+          <Body muted>Nothing scheduled right now.</Body>
+        )}
         <Button title="See gatherings" variant="secondary" onPress={() => router.push("/gatherings")} />
       </Card>
 
