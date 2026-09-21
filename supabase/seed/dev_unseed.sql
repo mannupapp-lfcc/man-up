@@ -25,17 +25,20 @@ delete from meeting_attendance
     or marked_by  in (select id from _seed_profiles);
 delete from meetings where id in (select id from _seed_meetings);
 
+-- Prayer requests reference both a seed author and a seed group.
+delete from prayer_interactions
+ where profile_id in (select id from _seed_profiles)
+    or prayer_request_id in (select id from prayer_requests
+                             where profile_id in (select id from _seed_profiles)
+                                or group_id in (select id from _seed_groups));
+delete from prayer_requests
+ where profile_id in (select id from _seed_profiles) or group_id in (select id from _seed_groups);
+
 delete from group_messages
  where group_id in (select id from _seed_groups) or profile_id in (select id from _seed_profiles);
 delete from group_members
  where group_id in (select id from _seed_groups) or profile_id in (select id from _seed_profiles);
 delete from groups where id in (select id from _seed_groups);
-
-delete from prayer_interactions
- where profile_id in (select id from _seed_profiles)
-    or prayer_request_id in (select id from prayer_requests
-                             where profile_id in (select id from _seed_profiles));
-delete from prayer_requests where profile_id in (select id from _seed_profiles);
 
 delete from lesson_progress
  where profile_id in (select id from _seed_profiles)

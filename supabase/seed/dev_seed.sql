@@ -183,8 +183,8 @@ begin
      now() - interval '6 hours');
 
   -- ---------- Pray ----------
-  insert into prayer_requests (ministry_id, profile_id, body, is_anonymous, status, created_at)
-  values (m, (select id from _people where n = 6),
+  insert into prayer_requests (ministry_id, group_id, profile_id, body, is_anonymous, status, created_at)
+  values (m, grp_a, (select id from _people where n = 6),
           'Pray for my mother''s surgery on Thursday.', false, 'answered', now() - interval '12 days')
   returning id into pr;
   insert into prayer_interactions (ministry_id, prayer_request_id, profile_id, kind, body, created_at)
@@ -193,15 +193,15 @@ begin
   values (m, pr, (select id from _people where n = 6), 'comment',
           'Surgery went well. She is home and recovering. Thank you, brothers.', now() - interval '8 days');
 
-  insert into prayer_requests (ministry_id, profile_id, body, is_anonymous, status, created_at)
-  values (m, (select id from _people where n = 11),
+  insert into prayer_requests (ministry_id, group_id, profile_id, body, is_anonymous, status, created_at)
+  values (m, grp_b, (select id from _people where n = 11),
           'Job interview next week. Pray for peace and favor.', false, 'open', now() - interval '3 days')
   returning id into pr;
   insert into prayer_interactions (ministry_id, prayer_request_id, profile_id, kind, created_at)
   select m, pr, id, 'prayed', now() - interval '2 days' from _people where n in (3, 5, 12);
 
-  insert into prayer_requests (ministry_id, profile_id, body, is_anonymous, status, created_at)
-  values (m, (select id from _people where n = 13),
+  insert into prayer_requests (ministry_id, group_id, profile_id, body, is_anonymous, status, created_at)
+  values (m, grp_b, (select id from _people where n = 13),
           'Struggling in my marriage right now. Please pray.', true, 'open', now() - interval '1 day');
 
   -- ---------- Group chat ----------
