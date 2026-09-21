@@ -17,6 +17,7 @@ export default function MoreLayout() {
       <Stack.Screen name="progress" options={{ title: "My Progress" }} />
       <Stack.Screen name="settings/index" options={{ title: "Settings" }} />
       <Stack.Screen name="settings/leader-sees" options={{ title: "What your leader sees" }} />
+      <Stack.Screen name="settings/blocked" options={{ title: "Blocked men" }} />
       <Stack.Screen name="settings/delete-account" options={{ title: "Delete account" }} />
 
       {/* Ministry admins only: the few admin tasks that can't wait for a desk. */}

@@ -6,6 +6,7 @@ export default function PrayLayout() {
     <Stack screenOptions={stackScreenOptions}>
       <Stack.Screen name="index" options={{ title: "Pray" }} />
       <Stack.Screen name="new" options={{ title: "Share a request", presentation: "modal" }} />
+      <Stack.Screen name="[requestId]" options={{ title: "Prayer request" }} />
     </Stack>
   );
 }

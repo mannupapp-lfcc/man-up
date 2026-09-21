@@ -63,6 +63,64 @@ export type Database = {
           },
         ]
       }
+      content_reports: {
+        Row: {
+          created_at: string
+          id: string
+          ministry_id: string
+          reason: string | null
+          reporter_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["report_status"]
+          target_id: string
+          target_type: Database["public"]["Enums"]["report_target"]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ministry_id: string
+          reason?: string | null
+          reporter_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["report_status"]
+          target_id: string
+          target_type: Database["public"]["Enums"]["report_target"]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ministry_id?: string
+          reason?: string | null
+          reporter_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["report_status"]
+          target_id?: string
+          target_type?: Database["public"]["Enums"]["report_target"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_reports_ministry_id_fkey"
+            columns: ["ministry_id"]
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_reports_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           id: string
@@ -986,6 +1044,7 @@ export type Database = {
       }
       prayer_requests: {
         Row: {
+          answered_note: string | null
           body: string
           created_at: string
           group_id: string | null
@@ -997,6 +1056,7 @@ export type Database = {
           visibility: Database["public"]["Enums"]["prayer_visibility"]
         }
         Insert: {
+          answered_note?: string | null
           body: string
           created_at?: string
           group_id?: string | null
@@ -1008,6 +1068,7 @@ export type Database = {
           visibility?: Database["public"]["Enums"]["prayer_visibility"]
         }
         Update: {
+          answered_note?: string | null
           body?: string
           created_at?: string
           group_id?: string | null
@@ -1263,6 +1324,49 @@ export type Database = {
           },
         ]
       }
+      user_blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+          ministry_id: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+          ministry_id: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+          ministry_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_blocks_blocked_id_fkey"
+            columns: ["blocked_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_blocks_blocker_id_fkey"
+            columns: ["blocker_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_blocks_ministry_id_fkey"
+            columns: ["ministry_id"]
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1281,6 +1385,14 @@ export type Database = {
         Returns: undefined
       }
       fn_can_read_profile: { Args: { p_profile: string }; Returns: boolean }
+      fn_can_see_prayer: {
+        Args: {
+          p_group: string
+          p_ministry: string
+          p_visibility: Database["public"]["Enums"]["prayer_visibility"]
+        }
+        Returns: boolean
+      }
       fn_ensure_membership: {
         Args: {
           p_full_name: string
@@ -1290,12 +1402,17 @@ export type Database = {
         }
         Returns: boolean
       }
+      fn_has_blocked: { Args: { p_profile: string }; Returns: boolean }
       fn_in_group: {
         Args: { p_group: string; p_ministry: string }
         Returns: boolean
       }
       fn_is_admin: { Args: { p_ministry: string }; Returns: boolean }
       fn_is_leader: { Args: { p_ministry: string }; Returns: boolean }
+      fn_is_ministry_member: {
+        Args: { p_ministry: string; p_profile: string }
+        Returns: boolean
+      }
       fn_leads_group: {
         Args: { p_group: string; p_ministry: string }
         Returns: boolean
@@ -1309,6 +1426,13 @@ export type Database = {
         Returns: Database["public"]["Enums"]["ministry_role"]
       }
       fn_ministry_timezone: { Args: { p_ministry: string }; Returns: string }
+      fn_open_report: {
+        Args: {
+          p_target: string
+          p_type: Database["public"]["Enums"]["report_target"]
+        }
+        Returns: boolean
+      }
       fn_open_signup: { Args: { p_ministry: string }; Returns: boolean }
       generate_meetings: {
         Args: { p_ministry: string; p_weeks?: number }
@@ -1334,9 +1458,43 @@ export type Database = {
         Args: { p_group: string; p_profile: string }
         Returns: undefined
       }
+      prayer_comments: {
+        Args: { p_request: string }
+        Returns: {
+          author_id: string
+          author_name: string
+          body: string
+          created_at: string
+          id: string
+          is_mine: boolean
+        }[]
+      }
+      prayer_wall: {
+        Args: { p_ministry: string }
+        Returns: {
+          answered_note: string
+          author_id: string
+          author_name: string
+          body: string
+          comment_count: number
+          created_at: string
+          group_id: string
+          i_prayed: boolean
+          id: string
+          is_anonymous: boolean
+          is_mine: boolean
+          prayed_count: number
+          status: Database["public"]["Enums"]["prayer_status"]
+          visibility: Database["public"]["Enums"]["prayer_visibility"]
+        }[]
+      }
       redeem_invite: {
         Args: { p_code: string; p_full_name?: string; p_phone?: string }
         Returns: string
+      }
+      resolve_report: {
+        Args: { p_remove: boolean; p_report: string }
+        Returns: undefined
       }
       set_group_leader: {
         Args: {
@@ -1354,6 +1512,8 @@ export type Database = {
       ministry_role: "member" | "co_leader" | "leader" | "admin"
       prayer_status: "open" | "answered" | "archived"
       prayer_visibility: "group" | "ministry"
+      report_status: "open" | "reviewed" | "actioned"
+      report_target: "group_message" | "prayer_request" | "prayer_comment"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1487,6 +1647,8 @@ export const Constants = {
       ministry_role: ["member", "co_leader", "leader", "admin"],
       prayer_status: ["open", "answered", "archived"],
       prayer_visibility: ["group", "ministry"],
+      report_status: ["open", "reviewed", "actioned"],
+      report_target: ["group_message", "prayer_request", "prayer_comment"],
     },
   },
 } as const

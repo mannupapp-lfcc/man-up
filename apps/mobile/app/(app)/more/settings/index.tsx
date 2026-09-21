@@ -13,6 +13,7 @@ export default function Settings() {
         <Body muted>{state.session.user.email}</Body>
       </Card>
       <Button title="What your leader sees" variant="secondary" onPress={() => router.push("/more/settings/leader-sees")} />
+      <Button title="Blocked men" variant="secondary" onPress={() => router.push("/more/settings/blocked")} />
       <Button title="Delete account" variant="secondary" onPress={() => router.push("/more/settings/delete-account")} />
       <Button title="Sign out" variant="secondary" onPress={() => void signOut()} />
     </Screen>

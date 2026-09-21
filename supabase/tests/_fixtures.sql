@@ -176,5 +176,16 @@ begin
 
     insert into push_tokens (profile_id, ministry_id, expo_token)
       values (tests.u(t, 'member'), m, 'ExponentPushToken[' || t || ']');
+
+    -- Blocks and reports exist only if 0007 is applied (tests run before and after).
+    if to_regclass('public.user_blocks') is not null then
+      -- 'unplaced' blocks 'former': neither has content, so no other test changes.
+      execute format('insert into user_blocks (ministry_id, blocker_id, blocked_id) values (%L, %L, %L)',
+                     m, tests.u(t, 'unplaced'), tests.u(t, 'former'));
+      -- Already reviewed, so it grants admins no access (only open reports do).
+      execute format($q$insert into content_reports (ministry_id, reporter_id, target_type, target_id, status)
+                        select %L, %L, 'group_message', id, 'reviewed' from group_messages
+                        where ministry_id = %L and group_id = %L$q$, m, tests.u(t, 'member2'), m, g1);
+    end if;
   end loop;
 end $$;
