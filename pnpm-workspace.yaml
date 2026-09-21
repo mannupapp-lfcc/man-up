@@ -8,3 +8,9 @@ onlyBuiltDependencies:
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver
+
+# One React across the monorepo (Expo requires a single copy; Sanity's UI deps
+# would otherwise pull in a second react-dom).
+overrides:
+  react: 19.2.3
+  react-dom: 19.2.3

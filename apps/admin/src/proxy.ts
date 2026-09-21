@@ -38,6 +38,6 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // api/inngest is called by Inngest (signed requests), not by a signed-in admin.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.png|apple-icon.png|logo.png|api/inngest).*)"],
+  // api/inngest and api/sanity are called by Inngest and Sanity (signed requests), not by a signed-in admin.
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.png|apple-icon.png|logo.png|api/inngest|api/sanity).*)"],
 };

@@ -239,6 +239,22 @@ begin
   from _people p cross join generate_series(1, 4) l
   where (p.n in (2, 4, 6, 7) and l <= 3) or (p.n in (11, 12) and l = 1);
 
+  -- Lesson content and this week's questions (normally synced from Sanity).
+  update lessons set scripture_ref = 'Joshua 1:8',
+    reflection_questions = '["Where are you standing on the sidelines?", "What would stepping up look like this week?"]'
+  where sanity_id like 'seed-lesson-%';
+
+  insert into weekly_questions (ministry_id, sanity_id, week_of, title, questions)
+  values (m, 'seed-weekly-1', (week0 at time zone 'America/New_York')::date, 'Called to Stand',
+          '["Where do you need courage this week?", "Who is one man you can encourage before Saturday?", "What is one step you will take, and who will check on you?"]');
+
+  insert into gathering_content (ministry_id, sanity_id, gathering_date, topic, teacher, prework_questions, recap, takehome_questions)
+  select m, 'seed-gathering-content-1', (gathering_at at time zone 'America/New_York')::date,
+         'Leading at Home', 'Guest teacher',
+         '["What does leadership at home look like for you right now?"]', null,
+         '["Name one way you will serve your family this week."]'
+  from gatherings where id = '5eed0003-0000-4000-8000-000000000006';
+
   -- ---------- Serve ----------
   insert into serve_opportunities (id, ministry_id, title, serve_at, church_center_url) values
     ('5eed0006-0000-4000-8000-000000000001', m, 'Parking Team',            week0 + interval '6 days 8 hours',  'https://lfcc.churchcenter.com/registrations'),

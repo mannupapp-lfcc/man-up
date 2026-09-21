@@ -177,6 +177,13 @@ begin
     insert into push_tokens (profile_id, ministry_id, expo_token)
       values (tests.u(t, 'member'), m, 'ExponentPushToken[' || t || ']');
 
+    if to_regclass('public.gathering_content') is not null then
+      execute format($q$insert into gathering_content (ministry_id, sanity_id, gathering_date, topic)
+                        values (%L, %L, current_date, 'Topic')$q$, m, t || '-gc-1');
+      execute format($q$insert into weekly_questions (ministry_id, sanity_id, week_of, questions)
+                        values (%L, %L, date_trunc('week', current_date)::date, '["Q1"]')$q$, m, t || '-wq-1');
+    end if;
+
     -- Blocks and reports exist only if 0007 is applied (tests run before and after).
     if to_regclass('public.user_blocks') is not null then
       -- 'unplaced' blocks 'former': neither has content, so no other test changes.

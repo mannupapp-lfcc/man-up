@@ -46,6 +46,7 @@ as a one-way READ (see Non-negotiables 3).
 ```
 apps/mobile        Expo app (Expo Router, app/ directory)
 apps/admin         Next.js admin + API routes (Sanity webhook, Inngest, PCO sync)
+apps/studio        Sanity Studio (project wf3m3duv, dataset production); authors content only
 packages/shared    generated DB types, enums, supabase client factory, score logic
 supabase/          config.toml, migrations/, tests/ (pgTAP), seed.sql
 docs/              product-map.md, scoring-plan.md
@@ -60,6 +61,8 @@ pnpm install
 pnpm --filter mobile start          # expo start (use a development build, not Expo Go)
 pnpm --filter admin dev             # next dev
 npx inngest-cli@latest dev          # local Inngest dev server (set INNGEST_DEV=1 in apps/admin/.env.local)
+pnpm --filter studio dev            # Sanity Studio at localhost:3333
+pnpm --filter studio deploy         # publish the Studio to <name>.sanity.studio (Kevin runs this)
 pnpm exec supabase migration new <name>   # new migration file; never edit an applied one
 pnpm test:db                        # pgTAP tests against lfcc-manup; pending migrations applied
                                     # inside the test transaction, everything rolled back

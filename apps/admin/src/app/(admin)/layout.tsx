@@ -9,6 +9,7 @@ const NAV = [
   { href: "/invites", label: "Invite codes" },
   { href: "/pco", label: "Planning Center" },
   { href: "/reports", label: "Reports" },
+  { href: "/content", label: "Content" },
 ] as const;
 
 export default async function AdminLayout({ children }: LayoutProps<"/">) {

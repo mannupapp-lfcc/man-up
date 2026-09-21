@@ -123,6 +123,7 @@ export type Database = {
       }
       courses: {
         Row: {
+          description: string | null
           id: string
           is_published: boolean
           ministry_id: string
@@ -131,6 +132,7 @@ export type Database = {
           title: string
         }
         Insert: {
+          description?: string | null
           id?: string
           is_published?: boolean
           ministry_id: string
@@ -139,6 +141,7 @@ export type Database = {
           title: string
         }
         Update: {
+          description?: string | null
           id?: string
           is_published?: boolean
           ministry_id?: string
@@ -194,6 +197,55 @@ export type Database = {
             foreignKeyName: "gathering_checkins_profile_id_fkey"
             columns: ["profile_id"]
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gathering_content: {
+        Row: {
+          gathering_date: string
+          id: string
+          is_published: boolean
+          ministry_id: string
+          prework_questions: NonNullable<Json>
+          recap: string | null
+          sanity_id: string
+          synced_at: string
+          takehome_questions: NonNullable<Json>
+          teacher: string | null
+          topic: string | null
+        }
+        Insert: {
+          gathering_date: string
+          id?: string
+          is_published?: boolean
+          ministry_id: string
+          prework_questions?: NonNullable<Json>
+          recap?: string | null
+          sanity_id: string
+          synced_at?: string
+          takehome_questions?: NonNullable<Json>
+          teacher?: string | null
+          topic?: string | null
+        }
+        Update: {
+          gathering_date?: string
+          id?: string
+          is_published?: boolean
+          ministry_id?: string
+          prework_questions?: NonNullable<Json>
+          recap?: string | null
+          sanity_id?: string
+          synced_at?: string
+          takehome_questions?: NonNullable<Json>
+          teacher?: string | null
+          topic?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gathering_content_ministry_id_fkey"
+            columns: ["ministry_id"]
+            referencedRelation: "ministries"
             referencedColumns: ["id"]
           },
         ]
@@ -522,31 +574,49 @@ export type Database = {
       }
       lessons: {
         Row: {
+          body: string | null
           course_id: string
           id: string
+          is_published: boolean
           ministry_id: string
+          reflection_questions: NonNullable<Json>
           sanity_id: string
+          scripture_ref: string | null
+          scripture_text: string | null
           sort_order: number
           synced_at: string
           title: string
+          video_url: string | null
         }
         Insert: {
+          body?: string | null
           course_id: string
           id?: string
+          is_published?: boolean
           ministry_id: string
+          reflection_questions?: NonNullable<Json>
           sanity_id: string
+          scripture_ref?: string | null
+          scripture_text?: string | null
           sort_order: number
           synced_at?: string
           title: string
+          video_url?: string | null
         }
         Update: {
+          body?: string | null
           course_id?: string
           id?: string
+          is_published?: boolean
           ministry_id?: string
+          reflection_questions?: NonNullable<Json>
           sanity_id?: string
+          scripture_ref?: string | null
+          scripture_text?: string | null
           sort_order?: number
           synced_at?: string
           title?: string
+          video_url?: string | null
         }
         Relationships: [
           {
@@ -1361,6 +1431,46 @@ export type Database = {
           },
           {
             foreignKeyName: "user_blocks_ministry_id_fkey"
+            columns: ["ministry_id"]
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_questions: {
+        Row: {
+          id: string
+          is_published: boolean
+          ministry_id: string
+          questions: NonNullable<Json>
+          sanity_id: string
+          synced_at: string
+          title: string | null
+          week_of: string
+        }
+        Insert: {
+          id?: string
+          is_published?: boolean
+          ministry_id: string
+          questions?: NonNullable<Json>
+          sanity_id: string
+          synced_at?: string
+          title?: string | null
+          week_of: string
+        }
+        Update: {
+          id?: string
+          is_published?: boolean
+          ministry_id?: string
+          questions?: NonNullable<Json>
+          sanity_id?: string
+          synced_at?: string
+          title?: string | null
+          week_of?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_questions_ministry_id_fkey"
             columns: ["ministry_id"]
             referencedRelation: "ministries"
             referencedColumns: ["id"]

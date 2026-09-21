@@ -1,14 +1,16 @@
 import { useLocalSearchParams } from "expo-router";
 import { Linking } from "react-native";
 import { Body, Button, Card, Loading, Screen, Title } from "@/components/ui";
+import { useGatheringContent } from "@/lib/content";
 import { formatGathering, useGatherings } from "@/lib/gatherings";
 
 // Church Center owns registration and check-in: this screen only links out.
 export default function GatheringDetail() {
   const { gatheringId } = useLocalSearchParams<{ gatheringId: string }>();
   const { state } = useGatherings();
-  if (state.status === "loading") return <Loading />;
   const g = state.status === "ready" ? [...state.upcoming, ...state.recent].find((x) => x.id === gatheringId) : undefined;
+  const { state: content } = useGatheringContent(g?.startsAt ?? null);
+  if (state.status === "loading") return <Loading />;
   if (!g)
     return (
       <Screen>
@@ -27,9 +29,24 @@ export default function GatheringDetail() {
       {g.churchCenterUrl && !g.canceled ? (
         <Button title="Open in Church Center" onPress={() => void Linking.openURL(g.churchCenterUrl!)} />
       ) : null}
-      <Card title="Before you come">
-        <Body muted>Topic, teacher, and questions to think about will show here (build step 6).</Body>
-      </Card>
+      {content.status === "ready" && content.data ? (
+        <>
+          {content.data.topic ? (
+            <Card title={content.data.topic}>{content.data.teacher ? <Body muted>With {content.data.teacher}</Body> : null}</Card>
+          ) : null}
+          {content.data.prework.length ? (
+            <Card title="Before you come">
+              {content.data.prework.map((q, i) => <Body key={i}>{i + 1}. {q}</Body>)}
+            </Card>
+          ) : null}
+          {content.data.recap ? <Card title="Recap"><Body>{content.data.recap}</Body></Card> : null}
+          {content.data.takehome.length ? (
+            <Card title="Take home">
+              {content.data.takehome.map((q, i) => <Body key={i}>{i + 1}. {q}</Body>)}
+            </Card>
+          ) : null}
+        </>
+      ) : null}
     </Screen>
   );
 }
