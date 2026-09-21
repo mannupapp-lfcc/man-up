@@ -39,6 +39,19 @@
     "experiments": {
       "typedRoutes": true
     },
-    "backgroundColor": "#000000"
+    "backgroundColor": "#000000",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "bbc1c0c5-4282-4724-802a-6f9fc50b6a94"
+      }
+    },
+    "owner": "mrmichael423",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/bbc1c0c5-4282-4724-802a-6f9fc50b6a94"
+    }
   }
 }
