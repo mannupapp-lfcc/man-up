@@ -107,7 +107,7 @@ export default function Chat() {
   }
 
   return (
-    <SafeAreaView style={[styles.flex, { backgroundColor: c.bg }]} edges={["bottom", "left", "right"]}>
+    <SafeAreaView style={[styles.flex, { backgroundColor: c.bg }]} edges={["left", "right"]}>
       <ChatKeyboardView>
         <FlatList
           style={styles.flex}

@@ -1,6 +1,6 @@
 import { useState, type ReactNode, type ComponentProps } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { router, type Href } from "expo-router";
+import { router, useSegments, type Href } from "expo-router";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -33,8 +33,11 @@ export function useColors() {
 
 export function Screen({ children }: { children: ReactNode }) {
   const c = useColors();
+  const segments = useSegments();
+  // The bottom tab bar already reserves the system navigation inset.
+  const insideTabs = segments[0] === "(app)";
   return (
-    <SafeAreaView style={[styles.flex, { backgroundColor: c.bg }]} edges={["bottom", "left", "right"]}>
+    <SafeAreaView style={[styles.flex, { backgroundColor: c.bg }]} edges={insideTabs ? ["left", "right"] : ["bottom", "left", "right"]}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           {children}
