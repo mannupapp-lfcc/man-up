@@ -23,7 +23,8 @@
     "scheme": "manup",
     "plugins": [
       "expo-router",
-      "expo-status-bar"
+      "expo-status-bar",
+      "expo-splash-screen"
     ],
     "experiments": {
       "typedRoutes": true

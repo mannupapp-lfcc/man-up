@@ -62,7 +62,8 @@ pnpm --filter admin dev             # next dev
 pnpm exec supabase migration new <name>   # new migration file; never edit an applied one
 pnpm test:db                        # pgTAP tests against lfcc-manup; pending migrations applied
                                     # inside the test transaction, everything rolled back
-pnpm gen:types                      # regenerate packages/shared/src/database.types.ts (linked project)
+pnpm gen:types                      # regenerate packages/shared/src/database.types.ts from lfcc-manup,
+                                    # pending migrations included (rolled back); no Docker or login
 pnpm exec supabase db push          # apply migrations to lfcc-manup (Kevin runs this)
 pnpm db:seed                        # fictional dev data (re-runnable); password manup-dev-password
 pnpm db:unseed                      # remove all dev data; REQUIRED before launch
@@ -75,9 +76,10 @@ scripts/test-db.mjs tests against it without committing anything: per test file 
 transaction, applies unpushed migrations, runs the file, and rolls back. Test files must be
 self-contained (create their own orgs, ministries, and auth users inside the transaction).
 
-After every migration: `pnpm test:db` passes with the migration pending, then typecheck both
-apps. Kevin reviews and runs `supabase db push`, then `pnpm gen:types` and typecheck again.
-A migration is not done until all of these pass.
+After every migration: `pnpm test:db` passes with the migration pending, `pnpm gen:types`, then
+typecheck both apps. Kevin reviews and runs `supabase db push` (or pastes it into the SQL editor
+and runs `supabase migration repair --status applied <version>`). A migration is not done until
+all of these pass. Until the history is repaired, prefix commands with APPLIED_MIGRATIONS=0001,...
 
 Dev seed (supabase/seed/): lfcc-manup holds fictional dev data until launch. Seed rows are
 marked by uuids starting 5eed and PCO/Sanity ids starting 'seed-'; dev_unseed.sql deletes by
@@ -139,7 +141,8 @@ migration adds a table.
 
 1. Scaffold monorepo, Expo + Next.js + shared package, supabase init. No features.
 2. Apply 0001_schema.sql. Write the full RLS policy set and pgTAP tests (below).
-3. Auth + invite-code signup (code resolves ministry and role), session persistence.
+3. Auth + open signup (email/password; joins an open ministry as member), optional invite codes
+   that grant leader roles, session persistence.
 4. My Group: groups, members, meetings, leader-marked attendance with the
    attendance_marked_at gate. Admin: create groups, assign men, promote co-leaders.
 5. Gatherings listing with Church Center deep link. Nightly one-way PCO sync. PCO Match queue.

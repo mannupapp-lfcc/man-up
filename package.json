@@ -7,12 +7,13 @@
   },
   "scripts": {
     "typecheck": "pnpm -r typecheck",
-    "gen:types": "supabase gen types typescript --linked --schema public > packages/shared/src/database.types.ts",
+    "gen:types": "node --env-file=.env scripts/gen-types.mjs",
     "test:db": "node --env-file=.env scripts/test-db.mjs",
     "db:seed": "node --env-file=.env scripts/run-sql.mjs supabase/seed/dev_unseed.sql supabase/seed/dev_seed.sql",
     "db:unseed": "node --env-file=.env scripts/run-sql.mjs supabase/seed/dev_unseed.sql"
   },
   "devDependencies": {
+    "@supabase/postgrest-typegen": "0.2.2",
     "pg": "^8.23.0",
     "supabase": "^2.117.0"
   }

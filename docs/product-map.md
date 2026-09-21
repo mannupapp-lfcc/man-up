@@ -395,7 +395,7 @@ Deliberately absent: no separate backend server, no Redis, no third-party analyt
 
 The minimum app that changes behavior.
 
-- Auth + profiles + tenancy scaffolding (organizations, ministries, ministry_members with roles, invite-code signup, namespaced storage)
+- Auth + profiles + tenancy scaffolding (organizations, ministries, ministry_members with roles, open signup plus leader invite codes, namespaced storage)
 - **My Group:** groups, roster, chat, meetings, attendance
 - **Unplaced flow:** "get connected" home state + admin unplaced list (a new man must never sit in an empty app)
 - **Gatherings:** list/detail, pre-questions, "I'm coming," Church Center deep links
@@ -478,12 +478,12 @@ The app is built single-church but **multi-tenant-shaped**, because adding tenan
 **What is deliberately NOT built until there is a real second tenant:**
 
 - No billing, subscriptions, or self-serve church onboarding
-- No per-church white-label App Store builds (one binary; tenants join via invite code)
+- No per-church white-label App Store builds (one binary; men pick their ministry at signup, or use an invite code)
 - No cross-organization anything
 
 **Tenant plumbing locked in from day one** (trivial now, painful to fix with live data):
 
-- **Signup flows through invite codes** scoped to a ministry, so every account lands in the right tenant with the right role from its first session.
+- **Open signup, per ministry:** anyone can create an account and join a ministry whose `ministry_config` has `open_signup = true`, always as a member. Invite codes scoped to a ministry grant leader roles (co-leader, leader, admin), including promoting an existing member. Group content stays locked until an admin places him in a group.
 - **Storage paths are namespaced** as `{ministry_id}/...` in Supabase Storage from the first photo uploaded, with storage policies matching the same RLS helper.
 - **Push notifications resolve recipients through ministry membership**, never "all users," so a digest can never cross tenants.
 - **The scoring job iterates per ministry**, reading that ministry's own score_config, so tenants tune independently and one ministry's recalibration never touches another's.
