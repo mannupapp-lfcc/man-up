@@ -1,5 +1,6 @@
+import { ChatKeyboardView } from "@/components/ChatKeyboardView";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, FlatList, Keyboard, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { openSafetyMenu } from "@/components/safety";
 import { Loading, useColors } from "@/components/ui";
@@ -107,8 +108,11 @@ export default function Chat() {
 
   return (
     <SafeAreaView style={[styles.flex, { backgroundColor: c.bg }]} edges={["bottom", "left", "right"]}>
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined} keyboardVerticalOffset={90}>
+      <ChatKeyboardView>
         <FlatList
+          style={styles.flex}
+          keyboardDismissMode="on-drag"
+          keyboardShouldPersistTaps="handled"
           ref={listRef}
           inverted
           data={messages}
@@ -119,6 +123,7 @@ export default function Chat() {
             const mine = m.profile_id === me;
             return (
               <Pressable
+                onPress={Keyboard.dismiss}
                 onLongPress={() => onLongPress(m)}
                 accessibilityHint="Long press for options"
                 style={[styles.bubble, mine ? [styles.mine, { backgroundColor: c.navy }] : { backgroundColor: c.field, borderColor: c.border, borderWidth: 1 }]}
@@ -150,7 +155,7 @@ export default function Chat() {
             <Text style={{ color: c.onAccent, fontWeight: "700" }}>Send</Text>
           </Pressable>
         </View>
-      </KeyboardAvoidingView>
+      </ChatKeyboardView>
     </SafeAreaView>
   );
 }

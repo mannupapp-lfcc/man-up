@@ -1,5 +1,6 @@
+import { ChatKeyboardView } from "@/components/ChatKeyboardView";
 import { useState } from "react";
-import { Alert, FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, FlatList, Keyboard, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { openSafetyMenu } from "@/components/safety";
 import { Body, Button, Loading, Screen, useColors } from "@/components/ui";
@@ -79,8 +80,11 @@ export default function MinistryChat() {
 
   return (
     <SafeAreaView style={[styles.flex, { backgroundColor: c.bg }]} edges={["bottom", "left", "right"]}>
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined} keyboardVerticalOffset={90}>
+      <ChatKeyboardView>
         <FlatList
+          style={styles.flex}
+          keyboardDismissMode="on-drag"
+          keyboardShouldPersistTaps="handled"
           inverted
           data={messages}
           keyExtractor={(m) => m.id}
@@ -96,6 +100,7 @@ export default function MinistryChat() {
             const forMe = m.mentions.includes(me);
             return (
               <Pressable
+                onPress={Keyboard.dismiss}
                 onLongPress={() => onLongPress(m)}
                 accessibilityHint="Long press for options"
                 style={[
@@ -146,7 +151,7 @@ export default function MinistryChat() {
             <Text style={{ color: c.onAccent, fontWeight: "700" }}>Send</Text>
           </Pressable>
         </View>
-      </KeyboardAvoidingView>
+      </ChatKeyboardView>
     </SafeAreaView>
   );
 }

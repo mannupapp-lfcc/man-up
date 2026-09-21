@@ -15,6 +15,7 @@ export default function AppLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        tabBarHideOnKeyboard: true,
         tabBarActiveTintColor: colors.gold,
         tabBarInactiveTintColor: colors.muted,
         // Let the navigator size icons, labels, and system navigation insets.

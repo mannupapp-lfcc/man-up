@@ -147,7 +147,7 @@ export function ActionRow({ title, subtitle, icon, href }: {
   title: string; subtitle: string; icon: ComponentProps<typeof Ionicons>["name"]; href: Href;
 }) {
   return (
-    <Pressable accessibilityRole="button" onPress={() => router.push(href)}
+    <Pressable accessibilityRole="button" onPress={() => router.push(href, { withAnchor: true })}
       style={({ pressed }) => [styles.actionRow, pressed && { opacity: 0.8 }]}>
       <View style={styles.iconBadge}><Ionicons name={icon} size={23} color={colors.gold} /></View>
       <View style={{ flex: 1, gap: 5 }}>

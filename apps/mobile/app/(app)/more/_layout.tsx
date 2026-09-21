@@ -2,6 +2,9 @@ import { Stack } from "expo-router";
 import { useAuth } from "@/lib/auth";
 import { stackScreenOptions } from "@/lib/navigation";
 
+// Keep the More menu behind destinations opened from Home or a deep link.
+export const unstable_settings = { anchor: "index" };
+
 export default function MoreLayout() {
   const { state } = useAuth();
   const isAdmin = state.status === "ready" && state.membership.role === "admin";
