@@ -17,6 +17,8 @@
 --   PCO: men 02-10 matched by admin; 11-14 on the PCO roster but unmatched
 --     (Match queue; 13-14 have different contact info in PCO); 3 PCO people never
 --     joined the app; 15-17 and the admin are not in PCO at all.
+--   Pray: group-only requests in both groups (one anonymous), and one ministry-wide
+--     request from Dwayne, who has no group yet.
 -- Scores are not seeded; the Sunday night scoring job computes them.
 -- ============================================================
 
@@ -203,6 +205,14 @@ begin
   insert into prayer_requests (ministry_id, group_id, profile_id, body, is_anonymous, status, created_at)
   values (m, grp_b, (select id from _people where n = 13),
           'Struggling in my marriage right now. Please pray.', true, 'open', now() - interval '1 day');
+
+  -- Ministry-wide: Dwayne has no group yet and shared with everyone.
+  insert into prayer_requests (ministry_id, group_id, profile_id, body, is_anonymous, visibility, created_at)
+  values (m, null, (select id from _people where n = 16),
+          'New here. Pray that I find my footing and a group of brothers.', false, 'ministry', now() - interval '2 days')
+  returning id into pr;
+  insert into prayer_interactions (ministry_id, prayer_request_id, profile_id, kind, created_at)
+  select m, pr, id, 'prayed', now() - interval '1 day' from _people where n in (1, 2, 3, 9, 12);
 
   -- ---------- Group chat ----------
   insert into group_messages (ministry_id, group_id, profile_id, body, created_at) values

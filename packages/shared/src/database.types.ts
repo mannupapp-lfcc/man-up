@@ -970,32 +970,35 @@ export type Database = {
         Row: {
           body: string
           created_at: string
-          group_id: string
+          group_id: string | null
           id: string
           is_anonymous: boolean
           ministry_id: string
           profile_id: string
           status: Database["public"]["Enums"]["prayer_status"]
+          visibility: Database["public"]["Enums"]["prayer_visibility"]
         }
         Insert: {
           body: string
           created_at?: string
-          group_id: string
+          group_id?: string | null
           id?: string
           is_anonymous?: boolean
           ministry_id: string
           profile_id: string
           status?: Database["public"]["Enums"]["prayer_status"]
+          visibility?: Database["public"]["Enums"]["prayer_visibility"]
         }
         Update: {
           body?: string
           created_at?: string
-          group_id?: string
+          group_id?: string | null
           id?: string
           is_anonymous?: boolean
           ministry_id?: string
           profile_id?: string
           status?: Database["public"]["Enums"]["prayer_status"]
+          visibility?: Database["public"]["Enums"]["prayer_visibility"]
         }
         Relationships: [
           {
@@ -1327,6 +1330,7 @@ export type Database = {
       group_status: "forming" | "active" | "archived"
       ministry_role: "member" | "co_leader" | "leader" | "admin"
       prayer_status: "open" | "answered" | "archived"
+      prayer_visibility: "group" | "ministry"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1459,6 +1463,7 @@ export const Constants = {
       group_status: ["forming", "active", "archived"],
       ministry_role: ["member", "co_leader", "leader", "admin"],
       prayer_status: ["open", "answered", "archived"],
+      prayer_visibility: ["group", "ministry"],
     },
   },
 } as const

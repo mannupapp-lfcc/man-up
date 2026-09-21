@@ -9,8 +9,13 @@ export default function WhatYourLeaderSees() {
         <Body>How active you have been, as a simple level. Never a number, and never what you wrote.</Body>
       </Card>
       <Card title="Stays inside your group">
-        <Body>Your prayer requests and your group chat are seen only by the men in your group, including your leader.</Body>
-        <Body>They never show up on any dashboard or report.</Body>
+        <Body>Your group chat is seen only by the men in your group, including your leader.</Body>
+        <Body>It never shows up on any dashboard or report.</Body>
+      </Card>
+      <Card title="Your prayer requests: you choose">
+        <Body>Each time you share a request, you choose who sees it: just your group, or the whole ministry.</Body>
+        <Body>Post anonymously and no one sees your name, whichever you choose.</Body>
+        <Body>Prayer requests never show up on any dashboard or report.</Body>
       </Card>
       <Card title="Only you see">
         <Body>Your lesson reflections.</Body>
