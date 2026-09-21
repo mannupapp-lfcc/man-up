@@ -27,6 +27,7 @@ as a one-way READ (see Non-negotiables 3).
 
 - docs/product-map.md - modules, screens, phases
 - docs/scoring-plan.md - the internal ministry scoring model (member and leader scores)
+- docs/backlog.md - open items outside the build order (to build, decisions, setup, launch)
 - supabase/migrations/ - schema as applied; extend with new migrations, never edit applied ones
   The spec wins over code. If code disagrees with the docs, the code is the bug.
 
