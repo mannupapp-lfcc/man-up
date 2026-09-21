@@ -21,10 +21,10 @@ export default function SignIn() {
 
   return (
     <Screen>
-      <Field label="Email" value={email} onChangeText={setEmail} autoCapitalize="none"
+      <Field label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" autoCorrect={false}
         autoComplete="email" keyboardType="email-address" textContentType="emailAddress" />
       <Field label="Password" value={password} onChangeText={setPassword} secureTextEntry
-        autoComplete="current-password" textContentType="password" />
+        autoCapitalize="none" autoCorrect={false} autoComplete="current-password" textContentType="password" />
       <ErrorText>{error}</ErrorText>
       <Button title="Sign in" onPress={submit} busy={busy} />
     </Screen>

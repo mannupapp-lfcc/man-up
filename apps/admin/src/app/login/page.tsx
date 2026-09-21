@@ -24,10 +24,10 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         <form action={signIn} className="flex flex-col gap-4">
           <Flash error={error} />
           <Label text="Email">
-            <input name="email" type="email" autoComplete="email" required className={inputClass} />
+            <input name="email" type="email" autoComplete="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} required className={inputClass} />
           </Label>
           <Label text="Password">
-            <input name="password" type="password" autoComplete="current-password" required className={inputClass} />
+            <input name="password" type="password" autoComplete="current-password" autoCapitalize="none" autoCorrect="off" spellCheck={false} required className={inputClass} />
           </Label>
           <Submit>Sign in</Submit>
         </form>

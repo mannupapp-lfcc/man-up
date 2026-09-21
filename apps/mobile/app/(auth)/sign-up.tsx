@@ -41,7 +41,7 @@ export default function SignUp() {
       <Field label="Phone (optional)" hint="Your group can reach you here." value={phone}
         onChangeText={setPhone} keyboardType="phone-pad" autoComplete="tel" textContentType="telephoneNumber" />
       <Field label="Password" hint="At least 8 characters." value={password} onChangeText={setPassword}
-        secureTextEntry autoComplete="new-password" textContentType="newPassword" />
+        secureTextEntry autoCapitalize="none" autoCorrect={false} autoComplete="new-password" textContentType="newPassword" />
       {joinChoice.element}
       <ErrorText>{error}</ErrorText>
       <Button title="Create account" onPress={submit} busy={busy || !joinChoice.ready} />
