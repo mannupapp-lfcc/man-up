@@ -9,7 +9,7 @@
 -- Emails: <firstname>@manup.test, and admin@manup.test for Nathan (the admin).
 --
 -- What each account shows:
---   Nathan    admin: Health, Reports (1 open), Planning Center Match queue, Scoring
+--   Nathan    admin, Tuesday Morning: Health, Reports (1 open), Planning Center Match queue, Scoring
 --   Marcus    leader, Tuesday Morning: Byron on Needs a Call (3-week decline), a
 --             confirmed group serve project, contact history
 --   Andre     co-leader, Tuesday Morning: same leader tools as Marcus
@@ -51,7 +51,7 @@ begin
   create temp table _people (n int, name text, role ministry_role, grp uuid,
                              leads boolean, joined_days int) on commit drop;
   insert into _people values
-    ( 1, 'Nathan',   'admin',     null,  false, 120),
+    ( 1, 'Nathan',   'admin',     grp_a, false, 120),
     ( 2, 'Marcus',   'leader',    grp_a, true,  110),
     ( 3, 'Darnell',  'leader',    grp_b, true,  110),
     ( 4, 'Andre',    'co_leader', grp_a, true,  100),

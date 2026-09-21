@@ -69,7 +69,7 @@ export function useMinistryChat() {
   }, [messages, people, loadPeople]);
 
   // Posting goes through post_ministry_message: it keeps only valid tags and queues
-  // the alerts (tagged men, and everyone when a leader posts).
+  // the alerts (tagged men, or everyone when a leader explicitly uses @everyone).
   async function send(body: string, mentions: string[]) {
     if (!ministryId) return "Not signed in.";
     const { data, error: err } = await supabase.rpc("post_ministry_message", {

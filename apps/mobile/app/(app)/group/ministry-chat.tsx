@@ -12,13 +12,14 @@ import { timeAgo } from "@/lib/pray";
 const TAG_QUERY = /(^|\s)@([^@\n]{0,30})$/;
 
 // Ministry chat: every man in the ministry. Type @ to tag a brother; a tag alerts
-// him, and a leader's post alerts everyone (the push itself ships with slice 9).
+// him; leaders can use @everyone to alert the ministry (push ships with slice 9).
 export default function MinistryChat() {
   const c = useColors();
   const { state: auth } = useAuth();
   const { messages, people, error, reload, send, remove } = useMinistryChat();
   const me = auth.status === "ready" ? auth.session.user.id : null;
   const ministryId = auth.status === "ready" ? auth.membership.ministryId : null;
+  const canMentionEveryone = auth.status === "ready" && auth.membership.role !== "member";
   const [draft, setDraft] = useState("");
   const [tagged, setTagged] = useState<Map<string, string>>(new Map());
   const [sending, setSending] = useState(false);
@@ -33,6 +34,7 @@ export default function MinistryChat() {
   if (!me || !ministryId || messages === null) return <Loading />;
 
   const query = TAG_QUERY.exec(draft)?.[2]?.toLowerCase();
+  const showEveryone = canMentionEveryone && query !== undefined && "everyone".startsWith(query) && query !== "everyone";
   const suggestions =
     query === undefined
       ? []
@@ -47,7 +49,10 @@ export default function MinistryChat() {
 
   async function onSend() {
     const body = draft.trim();
-    if (!body) return;
+    if (!body || sending) return;
+    if (/(^|[^\p{L}\p{N}_@])@everyone([^\p{L}\p{N}_]|$)/iu.test(body) && !canMentionEveryone) {
+      return Alert.alert("Not sent", "Only admins and leaders can use @everyone.");
+    }
     // Keep only tags whose @name is still in the text.
     const mentions = [...tagged].filter(([, name]) => body.includes(`@${name}`)).map(([id]) => id);
     setSending(true);
@@ -121,8 +126,15 @@ export default function MinistryChat() {
             );
           }}
         />
-        {suggestions.length ? (
+        {showEveryone || suggestions.length ? (
           <View style={[styles.suggestions, { borderTopColor: c.border, backgroundColor: c.field }]}>
+            {showEveryone ? (
+              <Pressable accessibilityRole="button" accessibilityLabel="Tag everyone in the ministry"
+                onPress={() => setDraft((d) => d.replace(/@([^@\n]{0,30})$/, "@everyone "))} style={styles.suggestion}>
+                <Text style={{ color: c.accent, fontSize: 16, fontWeight: "700" }}>@everyone</Text>
+                <Text style={{ color: c.muted, fontSize: 13 }}>Whole ministry</Text>
+              </Pressable>
+            ) : null}
             {suggestions.map(([id, p]) => (
               <Pressable key={id} accessibilityRole="button" accessibilityLabel={`Tag ${p.name}`} onPress={() => pick(id, p.name)} style={styles.suggestion}>
                 <Text style={{ color: c.text, fontSize: 16 }}>@{p.name}</Text>
@@ -164,6 +176,12 @@ function MessageBody({ message, people }: { message: MinistryMessage; people: Ma
     .filter((n): n is string => !!n)
     .sort((a, b) => b.length - a.length)
     .map((n) => `@${n}`);
+  // Keep the reserved broadcast tag separate from individual member IDs.
+  if (people.get(message.profile_id)?.isLeader) {
+    for (const match of message.body.matchAll(/(?:^|[^\p{L}\p{N}_@])(@everyone)(?=[^\p{L}\p{N}_]|$)/giu)) {
+      if (match[1] && !names.includes(match[1])) names.push(match[1]);
+    }
+  }
   const parts = names.length
     ? message.body.split(new RegExp(`(${names.map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`))
     : [message.body];

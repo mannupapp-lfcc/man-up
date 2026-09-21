@@ -50,12 +50,12 @@ select is((select array_agg(a.profile_id order by a.profile_id) from ministry_me
 select is((select count(*)::int from ministry_message_alerts a join ministry_messages m on m.id = a.message_id
            where m.body like 'hey @member2%' and a.kind <> 'mention'), 0, 'and they are mention alerts');
 
--- A leader's post alerts every current member except himself; a tag stays a mention.
+-- A leader's @everyone post alerts every current member except himself; a tag stays a mention.
 -- 'member2' blocked the leader first, so he gets nothing.
 insert into user_blocks (ministry_id, blocker_id, blocked_id)
   values (tests.m('a'), tests.u('a', 'member2'), tests.u('a', 'leader'));
 select tests.login('a', 'leader');
-select lives_ok(format($$select post_ministry_message(%L, 'Saturday at 8, men. @member a', array[%L]::uuid[])$$,
+select lives_ok(format($$select post_ministry_message(%L, 'Saturday at 8, men. @everyone @member a', array[%L]::uuid[])$$,
                        tests.m('a'), tests.u('a', 'member')),
                 'a leader posts');
 reset role;
