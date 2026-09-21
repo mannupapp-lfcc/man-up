@@ -94,7 +94,7 @@ Three roles, stored as a `role` field on the profile record, enforced with Supab
 
 ### 3.1 Home
 
-- Personalized landing: next 2nd Saturday gathering card, "My Group" card with next meeting, current course lesson, one nudge tied to the man's next LEAD step.
+- Personalized landing: next Saturday gathering card, "My Group" card with next meeting, current course lesson, one nudge tied to the man's next LEAD step.
 - **Not-yet-placed state:** a man in no group sees "Get connected to a group" as the lead card. One tap notifies admins, and he appears on the admin unplaced list until placed. Getting a new man into a group fast is the app's single most important job for him.
 - MAN UP acronym and motto woven into branding, not screen clutter.
 
@@ -102,7 +102,7 @@ Three roles, stored as a `role` field on the profile record, enforced with Supab
 
 ### 3.2 Gatherings
 
-- Next 2nd Saturday (9am to 11am) front and center: topic, teacher, location.
+- Next Saturday gathering front and center: topic, teacher, location. Gatherings are twice a month (after the fall Men Stepping Up season; monthly on the 2nd Saturday before that). The schedule lives in PCO: gatherings mirror the Men's Ministry group's events, so a schedule change needs no app change.
 - Pre-work: 2 or 3 discussion questions posted before the gathering so men come prepared.
 - "I'm coming" tap = attendance _intent_ for leader visibility (not a registration record).
 - If an event requires registration (retreats, special events): **"Register on Church Center" deep link.** No in-app registration ever.
