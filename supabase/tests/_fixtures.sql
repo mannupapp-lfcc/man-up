@@ -177,6 +177,13 @@ begin
     insert into push_tokens (profile_id, ministry_id, expo_token)
       values (tests.u(t, 'member'), m, 'ExponentPushToken[' || t || ']');
 
+    if to_regclass('public.serve_claims') is not null then
+      execute format($q$insert into serve_claims (ministry_id, group_id, opportunity_id, claimed_by)
+                        values (%L, %L, %L, %L)$q$, m, g1, opp, tests.u(t, 'leader'));
+      execute format($q$insert into serve_claim_optins (ministry_id, claim_id, profile_id)
+                        select %L, id, %L from serve_claims where group_id = %L$q$, m, tests.u(t, 'member'), g1);
+    end if;
+
     if to_regclass('public.gathering_content') is not null then
       execute format($q$insert into gathering_content (ministry_id, sanity_id, gathering_date, topic)
                         values (%L, %L, current_date, 'Topic')$q$, m, t || '-gc-1');

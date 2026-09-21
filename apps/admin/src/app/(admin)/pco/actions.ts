@@ -12,6 +12,7 @@ function describe(s: SyncSummary, dryRun: boolean) {
     `${s.roster ?? 0} men on the PCO roster`,
     `${s.events ?? 0} events`,
     s.checkIns === undefined ? "no Check-Ins events chosen yet" : `${s.checkIns} check-ins`,
+    s.serve === undefined ? "no serve sign-ups chosen yet" : `${s.serve} serve opportunities`,
   ];
   const head = dryRun ? "Preview only, nothing saved: found" : "Synced";
   return `${head} ${parts.join(", ")}.${s.errors.length ? ` Problems: ${s.errors.join("; ")}` : ""}`;
@@ -63,4 +64,19 @@ export async function clearMatch(formData: FormData) {
   if (error) fail("/pco", error.message);
   revalidatePath("/", "layout");
   redirect("/pco");
+}
+
+export async function saveServeSources(formData: FormData) {
+  const { supabase, ministryId } = await requireAdmin();
+  const clean = (key: string) => formData.getAll(key).map(String).filter((id) => /^\d+$/.test(id));
+  const { error } = await supabase.from("ministry_config").upsert(
+    [
+      { ministry_id: ministryId, key: "pco_serve_category_ids", value: clean("category_id") },
+      { ministry_id: ministryId, key: "pco_serve_signup_ids", value: clean("signup_id") },
+    ],
+    { onConflict: "ministry_id,key" },
+  );
+  if (error) fail("/pco", error.message);
+  revalidatePath("/pco");
+  redirect(`/pco?notice=${encodeURIComponent("Saved. Serve opportunities update on the next sync.")}`);
 }

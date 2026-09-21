@@ -19,6 +19,30 @@ create temp table _seed_meetings on commit drop as
   select id from meetings where group_id in (select id from _seed_groups)
      or id::text like '5eed%';
 
+-- Newer tables (0007, 0009) that point at seed people, groups, or opportunities.
+-- Guarded so unseed still runs before those migrations are applied.
+do $$
+begin
+  if to_regclass('public.serve_claims') is not null then
+    delete from serve_claim_optins
+     where profile_id in (select id from _seed_profiles)
+        or claim_id in (select id from serve_claims
+                        where group_id in (select id from _seed_groups)
+                           or opportunity_id::text like '5eed%'
+                           or claimed_by in (select id from _seed_profiles));
+    delete from serve_claims
+     where group_id in (select id from _seed_groups)
+        or opportunity_id::text like '5eed%'
+        or claimed_by in (select id from _seed_profiles);
+  end if;
+  if to_regclass('public.user_blocks') is not null then
+    delete from user_blocks
+     where blocker_id in (select id from _seed_profiles) or blocked_id in (select id from _seed_profiles);
+    delete from content_reports
+     where reporter_id in (select id from _seed_profiles) or reviewed_by in (select id from _seed_profiles);
+  end if;
+end $$;
+
 delete from meeting_attendance
  where meeting_id in (select id from _seed_meetings)
     or profile_id in (select id from _seed_profiles)

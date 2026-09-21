@@ -1,7 +1,7 @@
 import { Flash, PageTitle, Section, Submit, inputClass } from "@/components/ui";
 import { requireAdmin } from "@/lib/admin";
 import { pcoGetAll } from "@/lib/pco/client";
-import { clearMatch, confirmMatch, previewSync, saveCheckInEvents, syncNow } from "./actions";
+import { clearMatch, confirmMatch, previewSync, saveCheckInEvents, saveServeSources, syncNow } from "./actions";
 
 const digits = (s: string | null | undefined) => (s ?? "").replace(/\D/g, "").slice(-10);
 const lower = (s: string | null | undefined) => (s ?? "").trim().toLowerCase();
@@ -20,6 +20,23 @@ async function listCheckInEvents() {
   }
 }
 
+// Registrations sign-ups and categories, listed live (GET only) for the serve picker.
+async function listRegistrations() {
+  try {
+    const [signups, categories] = await Promise.all([
+      pcoGetAll("/registrations/v2/signups?per_page=100&filter=unarchived"),
+      pcoGetAll("/registrations/v2/categories?per_page=100"),
+    ]);
+    return {
+      signups: signups.data.map((s) => ({ id: s.id, name: String(s.attributes.name ?? "").trim(), when: (s.attributes.event_time_summary as string | null) ?? "" }))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+      categories: categories.data.map((c) => ({ id: c.id, name: String(c.attributes.name ?? "").trim() })).sort((a, b) => a.name.localeCompare(b.name)),
+    };
+  } catch {
+    return null;
+  }
+}
+
 export default async function PcoPage({ searchParams }: PageProps<"/pco">) {
   const { error, notice } = await searchParams;
   const { supabase, ministryId, timeZone } = await requireAdmin();
@@ -28,16 +45,23 @@ export default async function PcoPage({ searchParams }: PageProps<"/pco">) {
     supabase.from("pco_sync_log").select("resource, rows_upserted, status, error, ran_at").eq("ministry_id", ministryId)
       .order("ran_at", { ascending: false }).limit(6),
     supabase.from("ministry_config").select("key, value").eq("ministry_id", ministryId)
-      .in("key", ["pco_group_id", "pco_checkin_event_ids"]),
+      .in("key", ["pco_group_id", "pco_checkin_event_ids", "pco_serve_category_ids", "pco_serve_signup_ids"]),
     supabase.from("pco_roster").select("pco_person_id, full_name, email, phone").eq("ministry_id", ministryId).order("full_name"),
     supabase.from("ministry_members").select("profile_id, profiles(full_name, email, phone, pco_person_id)")
       .eq("ministry_id", ministryId).is("left_at", null),
     listCheckInEvents(),
   ]);
+  const registrations = await listRegistrations();
 
   const groupId = config?.find((c) => c.key === "pco_group_id")?.value;
   const chosenRaw = config?.find((c) => c.key === "pco_checkin_event_ids")?.value;
   const chosen = new Set(Array.isArray(chosenRaw) ? chosenRaw.map(String) : []);
+  const idSet = (key: string) => {
+    const v = config?.find((c) => c.key === key)?.value;
+    return new Set(Array.isArray(v) ? v.map(String) : []);
+  };
+  const serveCategories = idSet("pco_serve_category_ids");
+  const serveSignups = idSet("pco_serve_signup_ids");
 
   const matchedIds = new Set((people ?? []).map((p) => p.profiles?.pco_person_id).filter(Boolean));
   const unmatchedRoster = (roster ?? []).filter((r) => !matchedIds.has(r.pco_person_id));
@@ -96,6 +120,44 @@ export default async function PcoPage({ searchParams }: PageProps<"/pco">) {
                   {e.name}
                 </label>
               ))}
+            </div>
+            <div><Submit>Save</Submit></div>
+          </form>
+        )}
+      </Section>
+
+      <Section title="Serve opportunities">
+        <p className="mb-3 text-sm text-neutral-500">
+          Choose which Planning Center Registrations sign-ups appear under Serve in the app: whole categories, or single
+          sign-ups. Men still sign up on Church Center.
+        </p>
+        {registrations === null ? (
+          <p className="text-sm text-red-700 dark:text-red-300">Could not reach Planning Center Registrations.</p>
+        ) : (
+          <form action={saveServeSources} className="flex flex-col gap-3">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <p className="mb-1 text-sm font-medium">Categories</p>
+                <div className="max-h-64 overflow-y-auto rounded-md border border-neutral-300 p-3 dark:border-navy">
+                  {registrations.categories.map((c) => (
+                    <label key={c.id} className="flex items-center gap-2 py-1 text-sm">
+                      <input type="checkbox" name="category_id" value={c.id} defaultChecked={serveCategories.has(c.id)} className="accent-gold" />
+                      {c.name}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="mb-1 text-sm font-medium">Single sign-ups</p>
+                <div className="max-h-64 overflow-y-auto rounded-md border border-neutral-300 p-3 dark:border-navy">
+                  {registrations.signups.map((s) => (
+                    <label key={s.id} className="flex items-center gap-2 py-1 text-sm">
+                      <input type="checkbox" name="signup_id" value={s.id} defaultChecked={serveSignups.has(s.id)} className="accent-gold" />
+                      {s.name}{s.when ? <span className="text-neutral-500">, {s.when}</span> : null}
+                    </label>
+                  ))}
+                </div>
+              </div>
             </div>
             <div><Submit>Save</Submit></div>
           </form>

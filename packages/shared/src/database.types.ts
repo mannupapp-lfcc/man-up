@@ -1305,6 +1305,104 @@ export type Database = {
           },
         ]
       }
+      serve_claim_optins: {
+        Row: {
+          claim_id: string
+          created_at: string
+          id: string
+          ministry_id: string
+          profile_id: string
+        }
+        Insert: {
+          claim_id: string
+          created_at?: string
+          id?: string
+          ministry_id: string
+          profile_id: string
+        }
+        Update: {
+          claim_id?: string
+          created_at?: string
+          id?: string
+          ministry_id?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "serve_claim_optins_claim_id_fkey"
+            columns: ["claim_id"]
+            referencedRelation: "serve_claims"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "serve_claim_optins_ministry_id_fkey"
+            columns: ["ministry_id"]
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "serve_claim_optins_profile_id_fkey"
+            columns: ["profile_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      serve_claims: {
+        Row: {
+          claimed_by: string
+          confirmed_at: string | null
+          created_at: string
+          group_id: string
+          id: string
+          ministry_id: string
+          opportunity_id: string
+        }
+        Insert: {
+          claimed_by: string
+          confirmed_at?: string | null
+          created_at?: string
+          group_id: string
+          id?: string
+          ministry_id: string
+          opportunity_id: string
+        }
+        Update: {
+          claimed_by?: string
+          confirmed_at?: string | null
+          created_at?: string
+          group_id?: string
+          id?: string
+          ministry_id?: string
+          opportunity_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "serve_claims_claimed_by_fkey"
+            columns: ["claimed_by"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "serve_claims_group_id_fkey"
+            columns: ["group_id"]
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "serve_claims_ministry_id_fkey"
+            columns: ["ministry_id"]
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "serve_claims_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            referencedRelation: "serve_opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       serve_logs: {
         Row: {
           created_at: string
@@ -1362,28 +1460,46 @@ export type Database = {
       }
       serve_opportunities: {
         Row: {
+          active: boolean
           church_center_url: string | null
           created_at: string
+          description: string | null
           id: string
           ministry_id: string
+          pco_signup_id: string | null
+          registration_open: boolean
           serve_at: string | null
+          synced_at: string | null
           title: string
+          when_text: string | null
         }
         Insert: {
+          active?: boolean
           church_center_url?: string | null
           created_at?: string
+          description?: string | null
           id?: string
           ministry_id: string
+          pco_signup_id?: string | null
+          registration_open?: boolean
           serve_at?: string | null
+          synced_at?: string | null
           title: string
+          when_text?: string | null
         }
         Update: {
+          active?: boolean
           church_center_url?: string | null
           created_at?: string
+          description?: string | null
           id?: string
           ministry_id?: string
+          pco_signup_id?: string | null
+          registration_open?: boolean
           serve_at?: string | null
+          synced_at?: string | null
           title?: string
+          when_text?: string | null
         }
         Relationships: [
           {
@@ -1490,6 +1606,10 @@ export type Database = {
         }[]
       }
       clear_pco_match: { Args: { p_profile: string }; Returns: undefined }
+      confirm_group_serve: {
+        Args: { p_claim: string; p_served: string[]; p_served_on: string }
+        Returns: number
+      }
       confirm_pco_match: {
         Args: { p_pco_person_id: string; p_profile: string }
         Returns: undefined

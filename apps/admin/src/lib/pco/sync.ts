@@ -16,23 +16,26 @@ export type SyncSummary = {
   roster?: number;
   events?: number;
   checkIns?: number;
+  serve?: number;
   errors: string[];
 };
 
-type Config = { groupId: string | null; checkInEventIds: string[] };
+type Config = { groupId: string | null; checkInEventIds: string[]; serveCategoryIds: string[]; serveSignupIds: string[] };
 
 async function readConfig(db: Db, ministryId: string): Promise<Config> {
   const { data } = await db
     .from("ministry_config")
     .select("key, value")
     .eq("ministry_id", ministryId)
-    .in("key", ["pco_group_id", "pco_checkin_event_ids"]);
+    .in("key", ["pco_group_id", "pco_checkin_event_ids", "pco_serve_category_ids", "pco_serve_signup_ids"]);
   const get = (k: string) => data?.find((r) => r.key === k)?.value;
   const group = get("pco_group_id");
-  const events = get("pco_checkin_event_ids");
+  const ids = (v: unknown) => (Array.isArray(v) ? v.filter((e): e is string => typeof e === "string") : []);
   return {
     groupId: typeof group === "string" && group ? group : null,
-    checkInEventIds: Array.isArray(events) ? events.filter((e): e is string => typeof e === "string") : [],
+    checkInEventIds: ids(get("pco_checkin_event_ids")),
+    serveCategoryIds: ids(get("pco_serve_category_ids")),
+    serveSignupIds: ids(get("pco_serve_signup_ids")),
   };
 }
 
@@ -44,6 +47,13 @@ function pickContact(list: unknown, field: "address" | "number"): string | null 
   if (typeof primary === "string") return primary;
   const value = primary?.[field] ?? primary?.["value"];
   return typeof value === "string" ? value : null;
+}
+
+// PCO descriptions are HTML; the app shows plain text.
+function stripHtml(html: string) {
+  return html.replace(/<br\s*\/?>/gi, "\n").replace(/<\/p>/gi, "\n\n").replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .replace(/\n{3,}/g, "\n\n").trim() || null;
 }
 
 const relId = (r: PcoResource, name: string) => {
@@ -59,7 +69,7 @@ export async function syncMinistry(db: Db, ministryId: string, { dryRun = false 
   if (!config.groupId) return { ...summary, skipped: "No pco_group_id configured" };
   const groupId = config.groupId;
 
-  const log = async (resource: "roster" | "events" | "gathering_attendance", rows: number, error?: string) => {
+  const log = async (resource: "roster" | "events" | "gathering_attendance" | "signups", rows: number, error?: string) => {
     if (dryRun) return;
     await db.from("pco_sync_log").insert({ ministry_id: ministryId, resource, rows_upserted: rows, status: error ? "error" : "ok", error });
   };
@@ -169,6 +179,51 @@ export async function syncMinistry(db: Db, ministryId: string, { dryRun = false 
     } catch (e) {
       summary.errors.push(`check-ins: ${(e as Error).message}`);
       await log("gathering_attendance", 0, (e as Error).message);
+    }
+  }
+
+  // ---------- Registrations sign-ups -> serve opportunities ----------
+  if (config.serveCategoryIds.length || config.serveSignupIds.length) {
+    try {
+      const { data } = await pcoGetAll("/registrations/v2/signups?per_page=100&filter=unarchived&include=categories");
+      const categories = new Set(config.serveCategoryIds);
+      const picked = new Set(config.serveSignupIds);
+      const rows = data
+        .filter((signup) => {
+          const cats = signup.relationships?.categories?.data;
+          const inCategory = Array.isArray(cats) && cats.some((c) => categories.has(c.id));
+          return picked.has(signup.id) || inCategory;
+        })
+        .map((signup) => {
+          const a = signup.attributes;
+          return {
+            ministry_id: ministryId,
+            pco_signup_id: signup.id,
+            title: String(a.name ?? "Serve").trim(),
+            description: typeof a.description === "string" ? stripHtml(a.description) : null,
+            when_text: (a.event_time_summary as string | null) ?? null,
+            church_center_url: (a.public_url as string | null) ?? null,
+            registration_open: a.registration_available === true && a.closed !== true,
+            active: true,
+            synced_at: new Date().toISOString(),
+          };
+        });
+      summary.serve = rows.length;
+      if (!dryRun) {
+        if (rows.length) {
+          const up = await db.from("serve_opportunities").upsert(rows, { onConflict: "ministry_id,pco_signup_id" });
+          if (up.error) throw new Error(up.error.message);
+        }
+        // No longer picked, or archived in PCO: hide it (keep the row for serve logs).
+        const keep = rows.map((r) => r.pco_signup_id);
+        let stale = db.from("serve_opportunities").update({ active: false }).eq("ministry_id", ministryId).not("pco_signup_id", "is", null);
+        if (keep.length) stale = stale.not("pco_signup_id", "in", `(${keep.join(",")})`);
+        await stale;
+      }
+      await log("signups", rows.length);
+    } catch (e) {
+      summary.errors.push(`sign-ups: ${(e as Error).message}`);
+      await log("signups", 0, (e as Error).message);
     }
   }
 
