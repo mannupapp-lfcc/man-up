@@ -50,7 +50,7 @@ export async function scoreMinistry(db: Db, ministryId: string, now = new Date()
 
   // ---------- Load (ids, timestamps, statuses only) ----------
   const [members, placements, groups, meetings, serves, gatherings, gatheringAttendance, checkinConfig,
-    messages, prayers, prayed, progress, lessons, contacts, flags, history] = await Promise.all([
+    messages, ministryMessages, prayers, prayed, progress, lessons, contacts, flags, history] = await Promise.all([
     all<{ profile_id: string; role: string; profiles: { pco_person_id: string | null } | null }>((a, b) =>
       db.from("ministry_members").select("profile_id, role, profiles(pco_person_id)").eq("ministry_id", ministryId).is("left_at", null).range(a, b)),
     all<{ group_id: string; profile_id: string; joined_at: string; left_at: string | null; is_group_leader: boolean }>((a, b) =>
@@ -69,6 +69,8 @@ export async function scoreMinistry(db: Db, ministryId: string, now = new Date()
     db.from("ministry_config").select("value").eq("ministry_id", ministryId).eq("key", "pco_checkin_event_ids").maybeSingle(),
     all<{ profile_id: string; created_at: string }>((a, b) =>
       db.from("group_messages").select("profile_id, created_at").eq("ministry_id", ministryId).gte("created_at", since).range(a, b)),
+    all<{ profile_id: string; created_at: string }>((a, b) =>
+      db.from("ministry_messages").select("profile_id, created_at").eq("ministry_id", ministryId).gte("created_at", since).range(a, b)),
     all<{ profile_id: string; created_at: string }>((a, b) =>
       db.from("prayer_requests").select("profile_id, created_at").eq("ministry_id", ministryId).gte("created_at", since).range(a, b)),
     all<{ profile_id: string; created_at: string }>((a, b) =>
@@ -111,7 +113,7 @@ export async function scoreMinistry(db: Db, ministryId: string, now = new Date()
   const historyOf = (pid: string) => history.filter((h) => h.profile_id === pid);
 
   const activityOf = new Map<string, Date[]>();
-  for (const r of [...messages, ...prayers, ...prayed]) {
+  for (const r of [...messages, ...ministryMessages, ...prayers, ...prayed]) {
     const list = activityOf.get(r.profile_id) ?? [];
     list.push(new Date(r.created_at));
     activityOf.set(r.profile_id, list);

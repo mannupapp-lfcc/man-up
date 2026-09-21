@@ -244,6 +244,14 @@ begin
     (m, grp_b, (select id from _people where n = 12), 'I''ll be a few minutes late, save me a seat.',  now() - interval '1 day'),
     (m, grp_b, (select id from _people where n = 14), 'Honestly this group is a waste of my time.',    now() - interval '20 hours');
 
+  -- ---------- Ministry chat (everyone in the ministry) ----------
+  insert into ministry_messages (ministry_id, profile_id, body, mentions, created_at) values
+    (m, (select id from _people where n = 1),  'Men, Saturday breakfast moves to 8:30 this week. Bring a brother.', '{}', now() - interval '3 days'),
+    (m, (select id from _people where n = 16), 'New here. Anybody near the east side want to carpool Saturday?',  '{}', now() - interval '2 days'),
+    (m, (select id from _people where n = 3),  '@Tyrone I''m on the east side. I''ll pick you up.',
+       array[(select id from _people where n = 17)], now() - interval '2 days' + interval '1 hour'),
+    (m, (select id from _people where n = 12), 'Thankful for this crew. Good word Saturday.',                         '{}', now() - interval '20 hours');
+
   -- ---------- Safety: one open report (Nathan's Reports page), one block ----------
   insert into content_reports (ministry_id, reporter_id, target_type, target_id, reason, created_at)
   select m, (select id from _people where n = 11), 'group_message', id, 'Discouraging to the group', now() - interval '18 hours'

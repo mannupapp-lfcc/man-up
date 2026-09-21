@@ -19,7 +19,7 @@ create temp table _seed_meetings on commit drop as
   select id from meetings where group_id in (select id from _seed_groups)
      or id::text like '5eed%';
 
--- Newer tables (0007, 0009) that point at seed people, groups, or opportunities.
+-- Newer tables (0007, 0009, 0010, 0011) that point at seed people, groups, or opportunities.
 -- Guarded so unseed still runs before those migrations are applied.
 do $$
 begin
@@ -47,6 +47,11 @@ begin
      where blocker_id in (select id from _seed_profiles) or blocked_id in (select id from _seed_profiles);
     delete from content_reports
      where reporter_id in (select id from _seed_profiles) or reviewed_by in (select id from _seed_profiles);
+  end if;
+  if to_regclass('public.ministry_messages') is not null then
+    -- Alerts for a seed message go with it (on delete cascade).
+    delete from ministry_message_alerts where profile_id in (select id from _seed_profiles);
+    delete from ministry_messages where profile_id in (select id from _seed_profiles);
   end if;
 end $$;
 

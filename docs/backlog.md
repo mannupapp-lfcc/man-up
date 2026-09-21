@@ -9,6 +9,10 @@ each section. When an item is done, delete it (git history keeps the record).
   (RLS already allows it; only the screen is missing). Optional: suggest his phone from his
   matched PCO roster record for him to confirm. Never auto-write from PCO.
 - **Weekly check-in.** Ships with slice 9 (see CLAUDE.md build order).
+- **Ministry chat push delivery.** Ships with slice 9. 0011 already queues who to alert in
+  ministry_message_alerts (tagged men; everyone when a leader posts). The slice 9 sender reads
+  unsent rows with the service role, builds the text from the message at send time, pushes
+  via Expo, and sets sent_at. Also consider a mute-leader-posts setting per man.
 - **Scoring: admins with no group.** The job scores every ministry member, so an admin who is
   not in a group shows as Disconnected. Decide: skip men with no group and no role in one, or
   keep scoring them for the admin view only.

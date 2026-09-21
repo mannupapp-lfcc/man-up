@@ -2,7 +2,10 @@ import { Flash, PageTitle, Section, Submit } from "@/components/ui";
 import { requireAdmin } from "@/lib/admin";
 import { resolveReport } from "./actions";
 
-const TYPE_LABEL = { group_message: "Group chat message", prayer_request: "Prayer request", prayer_comment: "Prayer comment" } as const;
+const TYPE_LABEL = {
+  group_message: "Group chat message", ministry_message: "Ministry chat message",
+  prayer_request: "Prayer request", prayer_comment: "Prayer comment",
+} as const;
 
 // Privacy wall: admins see only the reported item, and only while its report is
 // open (RLS). Never the rest of the chat or prayer wall, and never an anonymous
@@ -19,14 +22,16 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
   ]);
 
   const ids = (t: string) => (reports ?? []).filter((r) => r.target_type === t).map((r) => r.target_id);
-  const [{ data: messages }, { data: requests }, { data: comments }] = await Promise.all([
+  const [{ data: messages }, { data: ministryMessages }, { data: requests }, { data: comments }] = await Promise.all([
     supabase.from("group_messages").select("id, body, profile_id, groups(name)").in("id", ids("group_message")),
+    supabase.from("ministry_messages").select("id, body, profile_id").in("id", ids("ministry_message")),
     supabase.from("prayer_requests").select("id, body, is_anonymous, visibility").in("id", ids("prayer_request")),
     supabase.from("prayer_interactions").select("id, body, profile_id").in("id", ids("prayer_comment")),
   ]);
   const personIds = [
     ...(reports ?? []).map((r) => r.reporter_id),
     ...(messages ?? []).map((m) => m.profile_id),
+    ...(ministryMessages ?? []).map((m) => m.profile_id),
     ...(comments ?? []).map((c) => c.profile_id),
     ...(blocks ?? []).flatMap((b) => [b.blocker_id, b.blocked_id]),
   ];
@@ -40,6 +45,10 @@ export default async function ReportsPage({ searchParams }: PageProps<"/reports"
     if (r.target_type === "group_message") {
       const m = messages?.find((x) => x.id === r.target_id);
       return m ? { body: m.body, by: `${name(m.profile_id)}, in ${m.groups?.name ?? "a group"}` } : null;
+    }
+    if (r.target_type === "ministry_message") {
+      const m = ministryMessages?.find((x) => x.id === r.target_id);
+      return m ? { body: m.body, by: `${name(m.profile_id)}, in ministry chat` } : null;
     }
     if (r.target_type === "prayer_comment") {
       const c = comments?.find((x) => x.id === r.target_id);

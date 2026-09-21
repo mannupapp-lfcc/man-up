@@ -17,6 +17,8 @@ function GroupStack() {
   return (
     <Stack screenOptions={stackScreenOptions}>
       <Stack.Screen name="index" options={{ title: "My Group" }} />
+      {/* Every man in the ministry, placed in a group or not. */}
+      <Stack.Screen name="ministry-chat" options={{ title: "Ministry chat" }} />
 
       {/* Group sections: only once he is placed in a group. */}
       <Stack.Protected guard={!!group}>

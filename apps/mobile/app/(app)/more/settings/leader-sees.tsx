@@ -12,6 +12,10 @@ export default function WhatYourLeaderSees() {
         <Body>Your group chat is seen only by the men in your group, including your leader.</Body>
         <Body>It never shows up on any dashboard or report.</Body>
       </Card>
+      <Card title="Ministry chat: everyone">
+        <Body>The ministry chat is seen by every man in the ministry, including leaders and admins.</Body>
+        <Body>It never shows up on any dashboard or report.</Body>
+      </Card>
       <Card title="Your prayer requests: you choose">
         <Body>Each time you share a request, you choose who sees it: just your group, or the whole ministry.</Body>
         <Body>Post anonymously and no one sees your name, whichever you choose.</Body>
@@ -23,7 +27,7 @@ export default function WhatYourLeaderSees() {
       </Card>
       <Card title="The one exception">
         <Body>
-          An admin can see a prayer post or a message only if someone in your group reports it. They see that one item,
+          An admin can see a group prayer post or group chat message only if someone reports it. They see that one item,
           never the rest of the conversation.
         </Body>
       </Card>

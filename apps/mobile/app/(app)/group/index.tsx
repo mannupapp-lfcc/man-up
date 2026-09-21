@@ -1,6 +1,8 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, type Href } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { Body, Button, Card, Loading, Screen, Title, useColors } from "@/components/ui";
+import { ActionRow, Body, Button, Card, Loading, Screen, Title, useColors } from "@/components/ui";
+import { useAuth } from "@/lib/auth";
 import { formatMeeting, formatSchedule, myAttendanceSummary, useGroup } from "@/lib/group";
 
 const SECTIONS: { href: Href; label: string; hint: string }[] = [
@@ -12,6 +14,15 @@ const SECTIONS: { href: Href; label: string; hint: string }[] = [
 
 export default function GroupOverview() {
   const { state, reload } = useGroup();
+  const { state: auth } = useAuth();
+  const ministryChat = (
+    <ActionRow
+      title="Ministry chat"
+      subtitle={`Talk with every man in ${auth.status === "ready" ? auth.membership.ministryName : "the ministry"}.`}
+      icon="megaphone-outline"
+      href="/group/ministry-chat"
+    />
+  );
 
   if (state.status === "loading") return <Loading />;
   if (state.status === "error")
@@ -31,6 +42,7 @@ export default function GroupOverview() {
           You are not in a group yet. Groups of 4 to 8 men meet every week to pray, talk, and hold each other up. A
           ministry leader will place you in one soon.
         </Body>
+        {ministryChat}
       </Screen>
     );
 
@@ -58,6 +70,8 @@ export default function GroupOverview() {
         </Card>
       ) : null}
 
+      {ministryChat}
+
       <View style={styles.grid}>
         {SECTIONS.map((s) => (
           <SectionLink key={s.label} {...s} />
@@ -84,8 +98,9 @@ function SectionLink({ href, label, hint }: { href: Href; label: string; hint: s
     <Pressable
       accessibilityRole="button"
       onPress={() => router.push(href)}
-      style={({ pressed }) => [styles.tile, { backgroundColor: c.navy, borderColor: c.border, opacity: pressed ? 0.8 : 1 }]}
+      style={({ pressed }) => [styles.tile, { backgroundColor: c.field, borderColor: c.border, opacity: pressed ? 0.8 : 1 }]}
     >
+      <Ionicons name={label === "Chat" ? "chatbubbles-outline" : label === "Meetings" ? "calendar-outline" : label === "Questions" ? "help-circle-outline" : "people-outline"} size={25} color={c.accent} />
       <Text style={{ color: c.text, fontSize: 17, fontWeight: "700" }}>{label}</Text>
       <Text style={{ color: c.muted, fontSize: 13 }}>{hint}</Text>
     </Pressable>
@@ -94,5 +109,5 @@ function SectionLink({ href, label, hint }: { href: Href; label: string; hint: s
 
 const styles = StyleSheet.create({
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  tile: { flexGrow: 1, flexBasis: "45%", borderWidth: 1, borderRadius: 12, padding: 16, gap: 4, minHeight: 84 },
+  tile: { flexGrow: 1, flexBasis: "45%", borderWidth: 1, borderRadius: 20, padding: 20, gap: 10, minHeight: 132 },
 });

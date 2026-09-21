@@ -952,6 +952,95 @@ export type Database = {
           },
         ]
       }
+      ministry_message_alerts: {
+        Row: {
+          created_at: string
+          id: string
+          kind: Database["public"]["Enums"]["ministry_alert_kind"]
+          message_id: string
+          ministry_id: string
+          profile_id: string
+          sent_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: Database["public"]["Enums"]["ministry_alert_kind"]
+          message_id: string
+          ministry_id: string
+          profile_id: string
+          sent_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["ministry_alert_kind"]
+          message_id?: string
+          ministry_id?: string
+          profile_id?: string
+          sent_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ministry_message_alerts_message_id_fkey"
+            columns: ["message_id"]
+            referencedRelation: "ministry_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ministry_message_alerts_ministry_id_fkey"
+            columns: ["ministry_id"]
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ministry_message_alerts_profile_id_fkey"
+            columns: ["profile_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ministry_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          mentions: string[]
+          ministry_id: string
+          profile_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          mentions?: string[]
+          ministry_id: string
+          profile_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          mentions?: string[]
+          ministry_id?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ministry_messages_ministry_id_fkey"
+            columns: ["ministry_id"]
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ministry_messages_profile_id_fkey"
+            columns: ["profile_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           created_at: string
@@ -1858,6 +1947,14 @@ export type Database = {
         Args: { p_excused?: string[]; p_meeting: string; p_present: string[] }
         Returns: undefined
       }
+      ministry_people: {
+        Args: { p_ministry: string }
+        Returns: {
+          full_name: string
+          is_leader: boolean
+          profile_id: string
+        }[]
+      }
       my_progress: {
         Args: { p_ministry: string }
         Returns: {
@@ -1874,6 +1971,23 @@ export type Database = {
       place_member: {
         Args: { p_group: string; p_profile: string }
         Returns: undefined
+      }
+      post_ministry_message: {
+        Args: { p_body: string; p_mentions?: string[]; p_ministry: string }
+        Returns: {
+          body: string
+          created_at: string
+          id: string
+          mentions: string[]
+          ministry_id: string
+          profile_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "ministry_messages"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       prayer_comments: {
         Args: { p_request: string }
@@ -1935,11 +2049,16 @@ export type Database = {
       attendance_status: "present" | "absent" | "excused"
       contact_method: "call" | "text" | "in_person" | "other"
       group_status: "forming" | "active" | "archived"
+      ministry_alert_kind: "leader_post" | "mention"
       ministry_role: "member" | "co_leader" | "leader" | "admin"
       prayer_status: "open" | "answered" | "archived"
       prayer_visibility: "group" | "ministry"
       report_status: "open" | "reviewed" | "actioned"
-      report_target: "group_message" | "prayer_request" | "prayer_comment"
+      report_target:
+        | "group_message"
+        | "prayer_request"
+        | "prayer_comment"
+        | "ministry_message"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2070,11 +2189,17 @@ export const Constants = {
       attendance_status: ["present", "absent", "excused"],
       contact_method: ["call", "text", "in_person", "other"],
       group_status: ["forming", "active", "archived"],
+      ministry_alert_kind: ["leader_post", "mention"],
       ministry_role: ["member", "co_leader", "leader", "admin"],
       prayer_status: ["open", "answered", "archived"],
       prayer_visibility: ["group", "ministry"],
       report_status: ["open", "reviewed", "actioned"],
-      report_target: ["group_message", "prayer_request", "prayer_comment"],
+      report_target: [
+        "group_message",
+        "prayer_request",
+        "prayer_comment",
+        "ministry_message",
+      ],
     },
   },
 } as const

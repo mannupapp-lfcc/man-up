@@ -210,5 +210,15 @@ begin
                         select %L, %L, 'group_message', id, 'reviewed' from group_messages
                         where ministry_id = %L and group_id = %L$q$, m, tests.u(t, 'member2'), m, g1);
     end if;
+
+    -- Ministry chat (0011): one message from 'other' and one queued alert for 'member'.
+    if to_regclass('public.ministry_messages') is not null then
+      execute format($q$insert into ministry_messages (ministry_id, profile_id, body, mentions)
+                        values (%L, %L, %L, array[%L]::uuid[])$q$,
+                     m, tests.u(t, 'other'), 'ministry message ' || t, tests.u(t, 'member'));
+      execute format($q$insert into ministry_message_alerts (ministry_id, message_id, profile_id, kind)
+                        select %L, id, %L, 'mention' from ministry_messages where ministry_id = %L$q$,
+                     m, tests.u(t, 'member'), m);
+    end if;
   end loop;
 end $$;

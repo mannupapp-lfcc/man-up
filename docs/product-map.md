@@ -49,7 +49,7 @@ Three roles, stored as a `role` field on the profile record, enforced with Supab
 
 ### Member
 
-- Sees: his own profile, his own LEAD progress, his group (roster, chat, questions, prayer wall), gatherings, serve opportunities, courses he's enrolled in.
+- Sees: his own profile, his own LEAD progress, his group (roster, chat, questions, prayer wall), the ministry chat, gatherings, serve opportunities, courses he's enrolled in.
 - Never sees: any other man's attendance, engagement data, or progress. No dashboards.
 - **"What your leader sees" screen** in settings: plain-language statement that leaders see attendance and activity level only, and that prayer requests, chat messages, and check-in values are never visible outside the group, with one stated exception: "an admin can only see a prayer post or message if someone in your group reports it." Precise honesty is what makes the promise believable.
 - **Account deletion** in settings: full in-app account and data deletion (App Store requirement).
@@ -83,8 +83,8 @@ Three roles, stored as a `role` field on the profile record, enforced with Supab
 ### Privacy wall (applies to every role including admin)
 
 - **Prayer request content never rolls up into any dashboard.** Engagement signals only (attendance, activity), never spiritual content. The author chooses who sees each prayer request: his group (the default) or the whole ministry. It never goes beyond his ministry.
-- Chat content is not surfaced in dashboards, only activity level (e.g., "active this week: yes/no").
-- **The single exception is the report path:** when a group member reports a prayer post or message, that specific item becomes visible to admins for moderation review via content_reports, and that access is inherently logged. Admins never gain browse access to any prayer wall or chat; they see reported items only.
+- Chat content (group and ministry chat) is not surfaced in dashboards, only activity level (e.g., "active this week: yes/no").
+- **The single exception is the report path:** when a group member reports a prayer post or message, that specific item becomes visible to admins for moderation review via content_reports, and that access is inherently logged. Admins never gain browse access to any prayer wall or group chat; they see reported items only. (The ministry chat is different by design: every man in the ministry, admins included, is in it.)
 - **Safety design:** the wall is never unwatched, because the group leader is a member and sees everything, and carries the crisis protocol. Oversight flows through the shepherd in the room, not through database access. Visibility also creates responsibility: admins not having browse access is deliberate liability hygiene, not an oversight gap.
 - This policy is ratified by ministry leadership via the presentation document (which states it plainly) and stated out loud in the approval conversation, so no one discovers it mid-conflict.
 
@@ -120,7 +120,9 @@ Fixed groups of roughly 4 to 8 men.
 - **Group chat:** simple chat with push notifications. Purpose-built, not a Discord clone. Long-press any message to report it (routes to admins); users can block another member (App Store requirement for user-generated content).
 - **Weekly check-in:** a lightweight "How are you really doing?" one-tap scale plus optional note, visible to the group. Gives the leader a pastoral radar without being surveillance.
 
-**Screens:** My Group > Chat / Meetings / Questions / Roster tabs.
+- **Ministry chat:** one chat for every man in the ministry, beside the group chats, open to men not yet placed in a group. Anyone can post. Type @ to tag a brother; a tag sends him a push. A leader's post (co-leader, leader, or admin) sends a push to every man in the ministry; other posts do not. Same report and block path as group chat. Admins are in the room like everyone else (this is not a private space the way group chat is). A post counts as activity in scoring; the words never do.
+
+**Screens:** My Group > Ministry chat / Chat / Meetings / Questions / Roster. Ministry chat is also linked from Home.
 
 ### 3.4 Pray
 

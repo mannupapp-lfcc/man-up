@@ -53,7 +53,7 @@ These are the findings this system is built on. None of them are exotic; they sh
 | Serving                  | 20     | Rolling 90-day window since serving is lower frequency. One confirmed serve in 90 days = 15 points. Two or more = 20.                                          | serve_participation                         |
 | Weekly check-in          | 15     | Submitted the weekly check-in. Prorated by weeks in window. The 1 to 5 value itself is never scored, only that he checked in.                                  | checkins                                    |
 | Gathering engagement     | 15     | "I'm coming" tap plus confirmed presence (PCO Check-Ins) at Saturday gatherings, scored as the share of gatherings in the window he attended (twice a month, so up to 2 in 30 days).                                                                                        | gathering_intents                           |
-| Group participation      | 10     | Any activity in chat or prayer wall that week (a message, a request, an "I prayed" tap). Binary per week, capped. Volume earns nothing extra.                  | messages, prayer_requests, prayer_responses |
+| Group participation      | 10     | Any activity in chat (group or ministry) or prayer wall that week (a message, a request, an "I prayed" tap). Binary per week, capped. Volume earns nothing extra. | messages, ministry_messages, prayer_requests, prayer_responses |
 | Course pace              | 10     | On pace with enrolled course checkpoints. If not enrolled in any open course, these 10 points redistribute proportionally so unenrolled men are not penalized. | lesson_progress                             |
 
 ### Recency weighting
