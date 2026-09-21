@@ -224,7 +224,7 @@ season_flags
   id, profile_id (fk), set_by (fk), starts_on, ends_on (required, max 60 days), created_at
 ```
 
-**Computation:** one scheduled job (pg_cron or an Edge Function on cron) runs Sunday night: computes all three score types with recency weights, writes rows, compares to prior weeks for trends and velocity flags, queues Monday leader digests via Expo push. The 72-hour attendance-marking gate is enforced here: meetings without marked attendance are excluded from "held."
+**Computation:** one scheduled Inngest function (served from apps/admin) runs Sunday night: computes all three score types with recency weights, writes rows, compares to prior weeks for trends and velocity flags, queues Monday leader digests via Expo push. The 72-hour attendance-marking gate is enforced here: meetings without marked attendance are excluded from "held."
 
 **RLS:** members read own individual_scores. Leaders read individual_scores for their group members, their own leader_scores, and write contact_log. Admins read everything.
 

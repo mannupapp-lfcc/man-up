@@ -236,7 +236,7 @@ invite_codes
 
 profiles
   id (uuid, = auth.users.id), organization_id (fk), full_name, phone,
-  photo_url, external_ids (jsonb, e.g. {"pco_person_id": "..."}), created_at
+  email, photo_url, pco_person_id (text, unique; set only by admin confirmation), created_at
   -- role removed: roles are per-ministry via ministry_members
 
 groups
@@ -366,7 +366,7 @@ Same pattern class as the LDP roles/permissions work, but simpler, since roles a
 
 ### Scoring engine
 
-One scheduled job (pg_cron or an Edge Function on a cron trigger) runs Sunday night: computes individual (recency-weighted, rolling 30 days), leader (rolling 60), and group (rolling 60) scores; writes score rows; compares against prior weeks for trend arrows, velocity flags (3 consecutive declines), and tier-drop alerts; enforces the 72-hour attendance-marking gate (unmarked meetings are excluded from "held"); and queues Monday morning leader digests via Expo push. Full formulas, tiers, grace rules, and the calibration loop live in the Scoring Plan.
+One scheduled Inngest function (served from apps/admin) runs Sunday night: computes individual (recency-weighted, rolling 30 days), leader (rolling 60), and group (rolling 60) scores; writes score rows; compares against prior weeks for trend arrows, velocity flags (3 consecutive declines), and tier-drop alerts; enforces the 72-hour attendance-marking gate (unmarked meetings are excluded from "held"); and queues Monday morning leader digests via Expo push. Full formulas, tiers, grace rules, and the calibration loop live in the Scoring Plan.
 
 ---
 
@@ -382,10 +382,10 @@ Reuse the Eagles Nest stack, proven and already shipped through both app stores:
 - **Monitoring:** Sentry for crash and error reporting from day one
 - **Releases:** EAS Update for over-the-air fixes between App Store releases
 - **Content authoring:** Sanity Studio (courses, lessons, gatherings, question sets, serve descriptions) with one-way webhook sync into Supabase on publish; the app never reads from Sanity directly
-- **Integrations layer:** scheduled Supabase Edge Functions plus an `external_ids` field on profiles; Planning Center API (People sync, Check-Ins) in Phase 2, optional Anthropic API drafting content into Sanity as drafts for review
+- **Scheduled jobs and integrations:** Inngest functions served from the Next.js admin app (apps/admin) on Vercel, plus `profiles.pco_person_id`; Planning Center API (People sync, Check-Ins) in Phase 2, optional Anthropic API drafting content into Sanity as drafts for review
 - **Deep links:** standard `Linking.openURL` to Church Center pages (URLs from ministry_config)
 
-Deliberately absent: no separate backend server, no queues, no Redis, no third-party analytics. Edge Functions cover cron and webhooks; the score tables are the analytics.
+Deliberately absent: no separate backend server, no Redis, no third-party analytics. Inngest covers scheduled jobs (nightly PCO read sync, scoring), Next.js API routes in apps/admin cover webhooks; the score tables are the analytics.
 
 ---
 
@@ -499,8 +499,8 @@ The app is built single-church but **multi-tenant-shaped**, because adding tenan
 **One-way sync, app reads Supabase only:**
 
 1. Editor publishes in Sanity Studio.
-2. Sanity webhook fires to a Supabase Edge Function.
-3. The function upserts the document into the matching Supabase table by `sanity_id`, routed to the right `ministry_id` via a required ministry reference field on every Sanity document.
+2. Sanity webhook fires to a Next.js API route in apps/admin (verified with SANITY_WEBHOOK_SECRET).
+3. The route upserts the document into the matching Supabase table by `sanity_id`, routed to the right `ministry_id` via a required ministry reference field on every Sanity document.
 4. The app reads Supabase exclusively: one API, one auth model, RLS intact, foreign keys intact (lesson_progress still references real lessons rows), and the scoring job never knows Sanity exists.
 
 Publishing is live in the app within seconds, with no app release. Drafts never leak because only published documents sync. Deletions/unpublishes sync as status changes, never hard deletes, so progress history is preserved.
@@ -527,7 +527,7 @@ Publishing is live in the app within seconds, with no app release. Drafts never 
 
 ### Phase 2 automations (Planning Center API)
 
-- **People sync:** nightly Edge Function matches profiles to PCO People by email/phone, stores pco_person_id in external_ids. One member database, not two.
+- **People sync:** a nightly Inngest function reads the Man Up PCO group roster (GET only) into pco_roster and suggests matches to profiles by email/phone. Suggestions land pre-filled in the admin PCO Match queue; an admin confirms a suggestion or searches and matches manually. Only that confirmation sets profiles.pco_person_id; the sync never writes it. One member database, not two.
 - **Gathering attendance from PCO Check-Ins:** official check-in data flows in automatically; the QR code becomes the fallback.
 - **Course progress from video webhooks:** Mux/Vimeo completion events mark lessons done.
 - **AI-drafted weekly questions and gathering recaps:** pipeline drafts from the teaching transcript into Sanity as draft documents (same pattern as the sermon-to-blog workflow); admin reviews and publishes in Studio, which syncs to the app. Human approval always required before anything reaches members.
