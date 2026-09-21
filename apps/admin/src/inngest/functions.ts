@@ -1,5 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/service";
 import { syncMinistry } from "@/lib/pco/sync";
+import { scoreMinistry } from "@/lib/scoring/run";
 import { inngest } from "./client";
 
 // Nightly one-way PCO read sync (roster, events, check-ins), one step per ministry
@@ -39,4 +40,21 @@ export const nightlyMeetings = inngest.createFunction(
   },
 );
 
-export const functions = [nightlyPcoSync, nightlyMeetings];
+// Sunday night scoring (docs/scoring-plan.md): every ministry against its own
+// score_config. Runs after the nightly PCO sync has pulled Saturday check-ins.
+export const weeklyScoring = inngest.createFunction(
+  { id: "weekly-scoring", triggers: [{ cron: "TZ=America/New_York 0 23 * * 0" }] },
+  async ({ step }) => {
+    const ministryIds = await step.run("list-ministries", async () => {
+      const { data } = await createServiceClient().from("score_config").select("ministry_id");
+      return [...new Set((data ?? []).map((r) => r.ministry_id))];
+    });
+    const results = [];
+    for (const id of ministryIds) {
+      results.push(await step.run(`score-${id}`, () => scoreMinistry(createServiceClient(), id)));
+    }
+    return results;
+  },
+);
+
+export const functions = [nightlyPcoSync, nightlyMeetings, weeklyScoring];

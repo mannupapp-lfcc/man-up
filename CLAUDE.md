@@ -66,6 +66,7 @@ pnpm --filter studio deploy         # publish the Studio to <name>.sanity.studio
 pnpm exec supabase migration new <name>   # new migration file; never edit an applied one
 pnpm test:db                        # pgTAP tests against lfcc-manup; pending migrations applied
                                     # inside the test transaction, everything rolled back
+pnpm --filter @manup/shared test    # scoring math unit tests (packages/shared/src/score)
 pnpm gen:types                      # regenerate packages/shared/src/database.types.ts from lfcc-manup,
                                     # pending migrations included (rolled back); no Docker or login
 pnpm exec supabase db push          # apply migrations to lfcc-manup (Kevin runs this)

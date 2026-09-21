@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/admin";
 import { signOut } from "../login/actions";
 
 const NAV = [
+  { href: "/health", label: "Health" },
   { href: "/groups", label: "Groups" },
   { href: "/people", label: "People" },
   { href: "/invites", label: "Invite codes" },

@@ -35,6 +35,13 @@ begin
         or opportunity_id::text like '5eed%'
         or claimed_by in (select id from _seed_profiles);
   end if;
+  if to_regclass('public.group_scores') is not null then
+    delete from group_scores where group_id in (select id from _seed_groups);
+    delete from leader_scores where group_id in (select id from _seed_groups);
+    delete from season_flags
+     where profile_id in (select id from _seed_profiles) or set_by in (select id from _seed_profiles);
+    delete from score_config_changes where changed_by in (select id from _seed_profiles);
+  end if;
   if to_regclass('public.user_blocks') is not null then
     delete from user_blocks
      where blocker_id in (select id from _seed_profiles) or blocked_id in (select id from _seed_profiles);

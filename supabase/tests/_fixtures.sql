@@ -177,6 +177,15 @@ begin
     insert into push_tokens (profile_id, ministry_id, expo_token)
       values (tests.u(t, 'member'), m, 'ExponentPushToken[' || t || ']');
 
+    if to_regclass('public.group_scores') is not null then
+      execute format($q$insert into group_scores (ministry_id, group_id, as_of, total, band, components)
+                        values (%L, %L, current_date, 70, 'Watch', '{}')$q$, m, g1);
+      execute format($q$insert into season_flags (ministry_id, profile_id, set_by, ends_on)
+                        values (%L, %L, %L, current_date + 14)$q$, m, tests.u(t, 'member2'), tests.u(t, 'leader'));
+      execute format($q$insert into score_config_changes (ministry_id, key, old_value, new_value, reason, changed_by)
+                        values (%L, 'test_weight', 0, 1, 'fixture', %L)$q$, m, tests.u(t, 'admin'));
+    end if;
+
     if to_regclass('public.serve_claims') is not null then
       execute format($q$insert into serve_claims (ministry_id, group_id, opportunity_id, claimed_by)
                         values (%L, %L, %L, %L)$q$, m, g1, opp, tests.u(t, 'leader'));

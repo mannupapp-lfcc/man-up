@@ -397,6 +397,52 @@ export type Database = {
           },
         ]
       }
+      group_scores: {
+        Row: {
+          as_of: string
+          band: string
+          components: NonNullable<Json>
+          group_id: string
+          id: string
+          ministry_id: string
+          total: number
+          triggers: NonNullable<Json>
+        }
+        Insert: {
+          as_of: string
+          band: string
+          components: NonNullable<Json>
+          group_id: string
+          id?: string
+          ministry_id: string
+          total: number
+          triggers?: NonNullable<Json>
+        }
+        Update: {
+          as_of?: string
+          band?: string
+          components?: NonNullable<Json>
+          group_id?: string
+          id?: string
+          ministry_id?: string
+          total?: number
+          triggers?: NonNullable<Json>
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_scores_group_id_fkey"
+            columns: ["group_id"]
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_scores_ministry_id_fkey"
+            columns: ["ministry_id"]
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       groups: {
         Row: {
           created_at: string
@@ -490,28 +536,40 @@ export type Database = {
         Row: {
           as_of: string
           components: NonNullable<Json>
+          group_id: string | null
           id: string
           ministry_id: string
           profile_id: string
+          tier: string | null
           total: number
         }
         Insert: {
           as_of: string
           components: NonNullable<Json>
+          group_id?: string | null
           id?: string
           ministry_id: string
           profile_id: string
+          tier?: string | null
           total: number
         }
         Update: {
           as_of?: string
           components?: NonNullable<Json>
+          group_id?: string | null
           id?: string
           ministry_id?: string
           profile_id?: string
+          tier?: string | null
           total?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "leader_scores_group_id_fkey"
+            columns: ["group_id"]
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "leader_scores_ministry_id_fkey"
             columns: ["ministry_id"]
@@ -733,30 +791,39 @@ export type Database = {
           as_of: string
           components: NonNullable<Json>
           id: string
+          is_new: boolean
           ministry_id: string
+          paused: boolean
           profile_id: string
           tier: string
           total: number
+          trend: string | null
           velocity_alert: boolean
         }
         Insert: {
           as_of: string
           components: NonNullable<Json>
           id?: string
+          is_new?: boolean
           ministry_id: string
+          paused?: boolean
           profile_id: string
           tier: string
           total: number
+          trend?: string | null
           velocity_alert?: boolean
         }
         Update: {
           as_of?: string
           components?: NonNullable<Json>
           id?: string
+          is_new?: boolean
           ministry_id?: string
+          paused?: boolean
           profile_id?: string
           tier?: string
           total?: number
+          trend?: string | null
           velocity_alert?: boolean
         }
         Relationships: [
@@ -1305,6 +1372,101 @@ export type Database = {
           },
         ]
       }
+      score_config_changes: {
+        Row: {
+          changed_at: string
+          changed_by: string
+          id: string
+          key: string
+          ministry_id: string
+          new_value: number
+          old_value: number | null
+          reason: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by: string
+          id?: string
+          key: string
+          ministry_id: string
+          new_value: number
+          old_value?: number | null
+          reason: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string
+          id?: string
+          key?: string
+          ministry_id?: string
+          new_value?: number
+          old_value?: number | null
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "score_config_changes_changed_by_fkey"
+            columns: ["changed_by"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "score_config_changes_ministry_id_fkey"
+            columns: ["ministry_id"]
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      season_flags: {
+        Row: {
+          created_at: string
+          ends_on: string
+          id: string
+          ministry_id: string
+          profile_id: string
+          set_by: string
+          starts_on: string
+        }
+        Insert: {
+          created_at?: string
+          ends_on: string
+          id?: string
+          ministry_id: string
+          profile_id: string
+          set_by: string
+          starts_on?: string
+        }
+        Update: {
+          created_at?: string
+          ends_on?: string
+          id?: string
+          ministry_id?: string
+          profile_id?: string
+          set_by?: string
+          starts_on?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "season_flags_ministry_id_fkey"
+            columns: ["ministry_id"]
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "season_flags_profile_id_fkey"
+            columns: ["profile_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "season_flags_set_by_fkey"
+            columns: ["set_by"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       serve_claim_optins: {
         Row: {
           claim_id: string
@@ -1668,6 +1830,18 @@ export type Database = {
         Args: { p_ministry: string; p_weeks?: number }
         Returns: number
       }
+      group_tiers: {
+        Args: { p_group: string }
+        Returns: {
+          as_of: string
+          is_new: boolean
+          paused: boolean
+          profile_id: string
+          tier: string
+          trend: string
+          velocity_alert: boolean
+        }[]
+      }
       join_ministry: {
         Args: { p_full_name: string; p_ministry: string; p_phone?: string }
         Returns: string
@@ -1683,6 +1857,19 @@ export type Database = {
       mark_attendance: {
         Args: { p_excused?: string[]; p_meeting: string; p_present: string[] }
         Returns: undefined
+      }
+      my_progress: {
+        Args: { p_ministry: string }
+        Returns: {
+          as_of: string
+          gatherings_attended_90d: number
+          is_new: boolean
+          lessons_completed: number
+          meetings_attended_90d: number
+          tier: string
+          times_served: number
+          trend: string
+        }[]
       }
       place_member: {
         Args: { p_group: string; p_profile: string }
@@ -1731,6 +1918,15 @@ export type Database = {
           p_group: string
           p_profile: string
           p_role: Database["public"]["Enums"]["ministry_role"]
+        }
+        Returns: undefined
+      }
+      set_score_config: {
+        Args: {
+          p_key: string
+          p_ministry: string
+          p_reason: string
+          p_value: number
         }
         Returns: undefined
       }

@@ -26,18 +26,19 @@ select throws_ok(
 reset role;
 
 select tests.login('a', 'leader');
-select is(tests.n('select 1 from member_scores'), 1, 'leader reads member scores for his group only');
+select is(tests.n('select 1 from member_scores'), 0, 'leader cannot read score rows (numbers) directly');
+select is((select count(*)::int from group_tiers(tests.g('a', 1))), 1, 'leader reads his group''s tiers through group_tiers()');
+select throws_ok($$ select total from group_tiers(tests.g('a', 1)) $$, '42703', null, 'group_tiers() exposes no number');
 select is(tests.n('select 1 from leader_scores'), 0, 'leader cannot read leader scores, even his own');
 select is(tests.n('select 1 from score_config'), 0, 'leader cannot read score_config');
 reset role;
 
 select tests.login('a', 'colead');
-select is(tests.n('select 1 from member_scores'), 1, 'co-leader reads member scores for his group only');
+select is((select count(*)::int from group_tiers(tests.g('a', 1))), 1, 'co-leader reads his group''s tiers');
 reset role;
 
 select tests.login('a', 'other_leader');
-select is(tests.n(format('select 1 from member_scores where profile_id = %L', tests.u('a', 'member'))),
-          0, 'group 2 leader cannot read group 1 scores');
+select is((select count(*)::int from group_tiers(tests.g('a', 1))), 0, 'group 2 leader cannot read group 1 tiers');
 reset role;
 
 select tests.login('a', 'admin');

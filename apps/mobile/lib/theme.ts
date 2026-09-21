@@ -10,4 +10,9 @@ export const colors = {
   text: "#FFFFFF",
   muted: "#A9B3C6",
   error: "#FF8A80",
+  // Tier colors (scoring plan: green, blue, yellow, red), tuned for the dark theme.
+  thriving: "#6BCB8B",
+  steady: "#7FB2FF",
+  drifting: "#D4A034",
+  disconnected: "#FF8A80",
 } as const;
