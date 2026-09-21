@@ -36,7 +36,7 @@ as a one-way READ (see Non-negotiables 3).
 - Builds and OTA: EAS Build (development, preview, production profiles) and EAS Update
 - Admin web: Next.js (App Router) on Vercel, TypeScript strict
 - Backend: Supabase project `lfcc-manup` (Postgres, Auth, RLS, Realtime, Storage)
-- Scheduled jobs: Inngest functions served from apps/admin (nightly PCO read sync, nightly scoring)
+- Scheduled jobs: Inngest functions served from apps/admin (nightly PCO read sync, Sunday night scoring)
 - Content: Sanity Studio, one-way webhook sync into Supabase (Sanity authors, Supabase mirrors)
 - Video: Mux or Vimeo Pro. Monitoring: Sentry (@sentry/react-native, @sentry/nextjs)
 - Push: expo-notifications with Expo push tokens stored in push_tokens
@@ -133,7 +133,7 @@ typecheck both apps. A migration is not done until all four pass.
 5. Gatherings listing with Church Center deep link. Nightly one-way PCO sync. PCO Match queue.
 6. Pray, group chat (Realtime), Courses (Sanity webhook sync, lessons, private reflections).
 7. Serve (listings with Church Center links, serve logs) and contact logs for leaders.
-8. Nightly scoring job per docs/scoring-plan.md; leader dashboard (mobile) and admin web.
+8. Sunday night scoring job per docs/scoring-plan.md; leader dashboard (mobile) and admin web.
 9. Push notifications, Sentry, EAS production profile, store submission.
 
 ## Testing
