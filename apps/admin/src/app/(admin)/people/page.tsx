@@ -35,8 +35,8 @@ export default async function PeoplePage({ searchParams }: PageProps<"/people">)
         {onlyUnplaced ? "Not in a group" : "People"}
       </PageTitle>
       <p className="mb-4 flex gap-4 text-sm">
-        <Link href="/people" className={onlyUnplaced ? "text-blue-700 hover:underline dark:text-blue-400" : "font-semibold"}>Everyone</Link>
-        <Link href="/people?show=unplaced" className={onlyUnplaced ? "font-semibold" : "text-blue-700 hover:underline dark:text-blue-400"}>Not in a group</Link>
+        <Link href="/people" className={onlyUnplaced ? "text-navy hover:underline dark:text-gold" : "font-semibold"}>Everyone</Link>
+        <Link href="/people?show=unplaced" className={onlyUnplaced ? "font-semibold" : "text-navy hover:underline dark:text-gold"}>Not in a group</Link>
       </p>
       <Flash error={error} />
 

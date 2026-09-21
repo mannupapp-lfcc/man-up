@@ -44,7 +44,7 @@ export default async function GroupPage({ params, searchParams }: PageProps<"/gr
 
   return (
     <>
-      <p className="mb-2 text-sm"><Link href="/groups" className="text-blue-700 hover:underline dark:text-blue-400">All groups</Link></p>
+      <p className="mb-2 text-sm"><Link href="/groups" className="text-navy hover:underline dark:text-gold">All groups</Link></p>
       <PageTitle sub={`${roster.length} ${roster.length === 1 ? "man" : "men"}`}>{group.name}</PageTitle>
       <Flash error={error} notice={notice} />
 

@@ -33,7 +33,7 @@ export function Section({ title, children }: { title: string; children: ReactNod
 }
 
 export const inputClass =
-  "rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-900";
+  "rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/40 dark:border-navy dark:bg-navy-deep";
 
 export function Label({ text, children }: { text: string; children: ReactNode }) {
   return (
@@ -46,8 +46,8 @@ export function Label({ text, children }: { text: string; children: ReactNode })
 
 export function Submit({ children, variant = "primary" }: { children: ReactNode; variant?: "primary" | "secondary" | "danger" }) {
   const styles = {
-    primary: "bg-blue-700 text-white hover:bg-blue-800",
-    secondary: "border border-neutral-300 hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800",
+    primary: "bg-gold text-black hover:bg-gold-light",
+    secondary: "border border-navy/30 text-navy hover:bg-navy/5 dark:border-gold/40 dark:text-white dark:hover:bg-navy",
     danger: "border border-red-300 text-red-700 hover:bg-red-50 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950",
   }[variant];
   return (

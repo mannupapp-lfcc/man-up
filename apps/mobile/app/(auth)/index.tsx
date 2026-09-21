@@ -18,6 +18,5 @@ export default function Welcome() {
 }
 
 const styles = StyleSheet.create({
-  // The logo has a black background, so it sits in a rounded square in light mode too.
-  logo: { width: "100%", maxWidth: 320, aspectRatio: 1, alignSelf: "center", borderRadius: 24 },
+  logo: { width: "100%", maxWidth: 320, aspectRatio: 1, alignSelf: "center" },
 });

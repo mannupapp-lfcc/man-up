@@ -1,14 +1,22 @@
 @import "tailwindcss";
 
+/* Man Up brand colors, sampled from the logo (apps/mobile/assets/logo.jpg). */
+@theme {
+  --color-navy: #0a2a62;
+  --color-navy-deep: #0b1a3a;
+  --color-gold: #d4a034;
+  --color-gold-light: #e8b040;
+}
+
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0b1a3a;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #000000;
+    --foreground: #ffffff;
   }
 }
 

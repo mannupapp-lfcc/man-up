@@ -3,6 +3,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { AuthProvider, useAuth } from "@/lib/auth";
+import { colors } from "@/lib/theme";
 
 // Keep the splash up until we know whether he is signed in, so a signed-in man
 // never sees the welcome screen flash on launch.
@@ -12,7 +13,7 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <RootStack />
-      <StatusBar style="auto" />
+      <StatusBar style="light" />
     </AuthProvider>
   );
 }
@@ -26,7 +27,7 @@ function RootStack() {
   }, [loading]);
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
       <Stack.Protected guard={state.status === "ready"}>
         <Stack.Screen name="(app)" />
       </Stack.Protected>

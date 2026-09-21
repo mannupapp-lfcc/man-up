@@ -8,23 +8,24 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  useColorScheme,
   View,
   type TextInputProps,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { colors } from "@/lib/theme";
 
+// Components read colors through this hook so screens stay theme-agnostic.
 export function useColors() {
-  const dark = useColorScheme() === "dark";
   return {
-    bg: dark ? "#0f1115" : "#ffffff",
-    text: dark ? "#f2f2f2" : "#15171a",
-    muted: dark ? "#9aa0a6" : "#5f6368",
-    border: dark ? "#2c2f36" : "#d0d4d9",
-    field: dark ? "#181b21" : "#f6f7f9",
-    accent: dark ? "#6ea8ff" : "#1f5fd1",
-    onAccent: "#ffffff",
-    error: dark ? "#ff8a80" : "#b3261e",
+    bg: colors.bg,
+    text: colors.text,
+    muted: colors.muted,
+    border: colors.border,
+    field: colors.surface,
+    navy: colors.navy,
+    accent: colors.gold,
+    onAccent: colors.onGold,
+    error: colors.error,
   };
 }
 
@@ -98,7 +99,7 @@ export function Button({
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
-        primary ? { backgroundColor: c.accent } : { borderColor: c.border, borderWidth: 1 },
+        primary ? { backgroundColor: c.accent } : { backgroundColor: c.navy, borderColor: c.border, borderWidth: 1 },
         (pressed || busy) && { opacity: 0.7 },
       ]}
     >

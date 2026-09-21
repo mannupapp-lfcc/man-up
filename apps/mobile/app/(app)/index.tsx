@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { formatMeeting, useMyGroup } from "@/lib/group";
 
 export default function Home() {
-  const { state, signOut } = useAuth();
+  const { state } = useAuth();
   const { state: group } = useMyGroup();
   if (state.status !== "ready") return null;
 
@@ -15,11 +15,14 @@ export default function Home() {
       <Title>Welcome, {state.fullName.split(" ")[0]}</Title>
       <Body muted>{state.membership.ministryName}</Body>
 
+      <Card title="Next gathering">
+        <Body muted>Saturday gatherings will show here, with a link to register on Church Center.</Body>
+        <Button title="See gatherings" variant="secondary" onPress={() => router.push("/gatherings")} />
+      </Card>
+
       {group.status === "ready" && !group.group ? (
         <Card title="Get connected to a group">
-          <Body>
-            Groups of 4 to 8 men meet every week. A ministry leader will place you in a group soon.
-          </Body>
+          <Body>Groups of 4 to 8 men meet every week. A ministry leader will place you in a group soon.</Body>
         </Card>
       ) : null}
 
@@ -27,11 +30,9 @@ export default function Home() {
         <Card title="My Group">
           <Body>{group.group.name}</Body>
           <Body muted>{next ? `Next meeting: ${formatMeeting(next.meetingAt)}` : "No meetings scheduled yet."}</Body>
-          <Button title="Open My Group" variant="secondary" onPress={() => router.push("/group")} />
+          <Button title="Open My Group" onPress={() => router.push("/group")} />
         </Card>
       ) : null}
-
-      <Button title="Sign out" variant="secondary" onPress={() => void signOut()} />
     </Screen>
   );
 }

@@ -110,6 +110,11 @@ migration adds a table.
   never from if-statements on a ministry name or id.
 - Plain language in UI copy: "My Group" not "Brotherhood", "My Progress" not "My Pathway".
 - Plain ASCII in docs and copy. No em dashes.
+- Brand colors come from the logo: black, navy #0A2A62, gold #D4A034, white. Use the tokens
+  (apps/mobile/lib/theme.ts, apps/admin globals.css @theme), never raw hex in screens. The app is
+  dark-first; gold marks the main action on a screen.
+- Leader-only mobile screens live under app/(app)/group/(leaders)/ behind Stack.Protected using
+  the same rule as fn_leads_group (is_group_leader and a non-member role).
 
 ## Non-negotiables (stop and say so if a request conflicts)
 

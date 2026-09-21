@@ -2,7 +2,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Body, Button, ErrorText, Loading, Screen, useColors } from "@/components/ui";
-import { formatMeeting, markedTooLate, useMyGroup, type AttendanceStatus } from "@/lib/group";
+import { formatMeeting, markedTooLate, useGroup, type AttendanceStatus } from "@/lib/group";
 import { supabase } from "@/lib/supabase";
 
 const OPTIONS: { value: AttendanceStatus; label: string }[] = [
@@ -11,11 +11,11 @@ const OPTIONS: { value: AttendanceStatus; label: string }[] = [
   { value: "excused", label: "Excused" },
 ];
 
-// Leaders mark every man in one step. Everyone starts as present (the common case);
+// Leader tools (nested in My Group, guarded in group/_layout). Leaders mark every man in one step. Everyone starts as present (the common case);
 // the leader changes only the men who were missing.
 export default function MarkAttendance() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const { state } = useMyGroup();
+  const { meetingId: id } = useLocalSearchParams<{ meetingId: string }>();
+  const { state, reload } = useGroup();
   const c = useColors();
   const [marks, setMarks] = useState<Record<string, AttendanceStatus> | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -47,8 +47,11 @@ export default function MarkAttendance() {
       p_present: ids("present"),
       p_excused: ids("excused"),
     });
-    setBusy(false);
-    if (err) return setError(err.message);
+    if (err) {
+      setBusy(false);
+      return setError(err.message);
+    }
+    await reload();
     router.back();
   }
 

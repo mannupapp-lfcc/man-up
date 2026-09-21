@@ -13,19 +13,19 @@ export default async function AdminLayout({ children }: LayoutProps<"/">) {
   const { ministryName } = await requireAdmin();
   return (
     <div className="flex flex-1 flex-col">
-      <header className="border-b border-neutral-200 dark:border-neutral-800">
+      <header className="border-b-2 border-gold bg-black text-white">
         <nav className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
-          <Link href="/groups" className="flex items-center gap-2 font-bold">
+          <Link href="/groups" className="flex items-center gap-2 font-bold text-gold">
             <Image src="/logo.png" alt="" width={32} height={32} className="rounded-md" />
             {ministryName} Admin
           </Link>
           {NAV.map((n) => (
-            <Link key={n.href} href={n.href} className="text-sm hover:underline">
+            <Link key={n.href} href={n.href} className="text-sm text-white/90 hover:text-gold">
               {n.label}
             </Link>
           ))}
           <form action={signOut} className="ml-auto">
-            <button type="submit" className="text-sm text-neutral-500 hover:underline">Sign out</button>
+            <button type="submit" className="text-sm text-white/70 hover:text-gold">Sign out</button>
           </form>
         </nav>
       </header>

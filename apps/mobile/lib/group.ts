@@ -1,6 +1,6 @@
 import type { DbEnum } from "@manup/shared";
 import { useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
+import { createContext, createElement, useCallback, useContext, useState, type ReactNode } from "react";
 import { useAuth } from "./auth";
 import { supabase } from "./supabase";
 
@@ -43,6 +43,9 @@ export function useMyGroup() {
   const { state: auth } = useAuth();
   const [state, setState] = useState<GroupState>({ status: "loading" });
   const me = auth.status === "ready" ? auth.session.user.id : null;
+  // Same rule as fn_leads_group in the database: flagged as a leader of this group
+  // AND a co-leader, leader, or admin in the ministry.
+  const leaderRole = auth.status === "ready" && auth.membership.role !== "member";
 
   const load = useCallback(async () => {
     if (!me) return;
@@ -105,7 +108,7 @@ export function useMyGroup() {
         name: mine.data.groups.name,
         meetingDay: mine.data.groups.meeting_day,
         meetingTime: mine.data.groups.meeting_time,
-        iLead: mine.data.is_group_leader,
+        iLead: mine.data.is_group_leader && leaderRole,
         roster: roster.data
           .map((r) => ({
             profileId: r.profile_id,
@@ -118,7 +121,7 @@ export function useMyGroup() {
         upcoming: all.filter((m) => m.meetingAt.getTime() > now).reverse().slice(0, 4),
       },
     });
-  }, [me]);
+  }, [me, leaderRole]);
 
   useFocusEffect(
     useCallback(() => {
@@ -151,4 +154,19 @@ export function formatSchedule(day: string | null, time: string | null) {
   const [h = 0, m = 0] = time.split(":").map(Number);
   const t = new Date(2000, 0, 1, h, m).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
   return `${day}s at ${t}`;
+}
+
+// One load of the group shared by every My Group screen (see app/(app)/group/_layout).
+type GroupContextValue = ReturnType<typeof useMyGroup>;
+const GroupContext = createContext<GroupContextValue | null>(null);
+
+export function GroupProvider({ children }: { children: ReactNode }) {
+  const value = useMyGroup();
+  return createElement(GroupContext.Provider, { value }, children);
+}
+
+export function useGroup() {
+  const ctx = useContext(GroupContext);
+  if (!ctx) throw new Error("useGroup must be used inside GroupProvider");
+  return ctx;
 }

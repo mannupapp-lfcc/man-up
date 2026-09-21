@@ -28,7 +28,7 @@ export default async function GroupsPage({ searchParams }: PageProps<"/groups">)
 
       {unplaced > 0 ? (
         <p className="mb-6 text-sm">
-          <Link href="/people?show=unplaced" className="font-medium text-blue-700 hover:underline dark:text-blue-400">
+          <Link href="/people?show=unplaced" className="font-medium text-navy hover:underline dark:text-gold">
             {unplaced} {unplaced === 1 ? "man is" : "men are"} not in a group yet
           </Link>
         </p>
@@ -47,7 +47,7 @@ export default async function GroupsPage({ searchParams }: PageProps<"/groups">)
                 return (
                   <tr key={g.id} className="border-t border-neutral-200 dark:border-neutral-800">
                     <td className="py-2 pr-4">
-                      <Link href={`/groups/${g.id}`} className="font-medium text-blue-700 hover:underline dark:text-blue-400">{g.name}</Link>
+                      <Link href={`/groups/${g.id}`} className="font-medium text-navy hover:underline dark:text-gold">{g.name}</Link>
                     </td>
                     <td className="pr-4">{g.meeting_day ? `${g.meeting_day} ${formatTime(g.meeting_time)}` : "Not set"}</td>
                     <td className="pr-4">{leaders || <span className="text-amber-700 dark:text-amber-400">None yet</span>}</td>
