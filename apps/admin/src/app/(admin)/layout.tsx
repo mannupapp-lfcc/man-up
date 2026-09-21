@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin";
 import { signOut } from "../login/actions";
@@ -14,7 +15,10 @@ export default async function AdminLayout({ children }: LayoutProps<"/">) {
     <div className="flex flex-1 flex-col">
       <header className="border-b border-neutral-200 dark:border-neutral-800">
         <nav className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
-          <span className="font-bold">{ministryName} Admin</span>
+          <Link href="/groups" className="flex items-center gap-2 font-bold">
+            <Image src="/logo.png" alt="" width={32} height={32} className="rounded-md" />
+            {ministryName} Admin
+          </Link>
           {NAV.map((n) => (
             <Link key={n.href} href={n.href} className="text-sm hover:underline">
               {n.label}

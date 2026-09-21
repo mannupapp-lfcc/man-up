@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Flash, Label, Submit, inputClass } from "@/components/ui";
 import { signIn, signOut } from "./actions";
 
@@ -7,6 +8,8 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
     <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-6 px-4 py-12">
       <div>
+        <Image src="/logo.png" alt="Man Up, Love First Christian Center Men's Fellowship" width={128} height={128}
+               className="mb-4 rounded-2xl" priority />
         <h1 className="text-2xl font-bold">Man Up Admin</h1>
         <p className="mt-1 text-sm text-neutral-500">For ministry admins. Men use the phone app.</p>
       </div>
