@@ -7,9 +7,11 @@
   },
   "scripts": {
     "typecheck": "pnpm -r typecheck",
-    "gen:types": "supabase gen types typescript --local > packages/shared/src/database.types.ts"
+    "gen:types": "supabase gen types typescript --linked --schema public > packages/shared/src/database.types.ts",
+    "test:db": "node --env-file=.env scripts/test-db.mjs"
   },
   "devDependencies": {
+    "pg": "^8.23.0",
     "supabase": "^2.117.0"
   }
 }

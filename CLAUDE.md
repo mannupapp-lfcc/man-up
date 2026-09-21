@@ -59,18 +59,23 @@ pnpm workspaces. Root .npmrc has `node-linker=hoisted` (required for Expo in a p
 pnpm install
 pnpm --filter mobile start          # expo start (use a development build, not Expo Go)
 pnpm --filter admin dev             # next dev
-supabase start                      # local stack
-supabase migration new <name>       # new migration file; never edit an applied one
-supabase db reset                   # replay all migrations + seed.sql locally
-supabase test db                    # run pgTAP tests in supabase/tests
-supabase gen types typescript --local > packages/shared/src/database.types.ts
-supabase db push                    # apply to the linked remote project (Kevin runs this)
+pnpm exec supabase migration new <name>   # new migration file; never edit an applied one
+pnpm test:db                        # pgTAP tests against lfcc-manup; pending migrations applied
+                                    # inside the test transaction, everything rolled back
+pnpm gen:types                      # regenerate packages/shared/src/database.types.ts (linked project)
+pnpm exec supabase db push          # apply migrations to lfcc-manup (Kevin runs this)
 eas build --profile development --platform ios
 eas update --branch preview
 ```
 
-After every migration: `supabase db reset`, `supabase test db`, regenerate types, then
-typecheck both apps. A migration is not done until all four pass.
+No Docker and no local Supabase stack. There is one database, lfcc-manup, and
+scripts/test-db.mjs tests against it without committing anything: per test file it opens a
+transaction, applies unpushed migrations, runs the file, and rolls back. Test files must be
+self-contained (create their own orgs, ministries, and auth users inside the transaction).
+
+After every migration: `pnpm test:db` passes with the migration pending, then typecheck both
+apps. Kevin reviews and runs `supabase db push`, then `pnpm gen:types` and typecheck again.
+A migration is not done until all of these pass.
 
 ## Environment
 
