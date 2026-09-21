@@ -7,25 +7,13 @@
 // separate, deliberate step.
 //
 // Usage: pnpm test:db [test files...]   (defaults to supabase/tests/*.sql)
-// Reads SUPABASE_DB_URL, falling back to manup_POSTGRES_URL_NON_POOLING (root .env).
 
 import { readdirSync, readFileSync } from "node:fs";
 import { basename, join } from "node:path";
-import pg from "pg";
+import { connect } from "./db.mjs";
 
 const MIGRATIONS_DIR = "supabase/migrations";
 const TESTS_DIR = "supabase/tests";
-
-const rawUrl = process.env.SUPABASE_DB_URL ?? process.env.manup_POSTGRES_URL_NON_POOLING;
-if (!rawUrl) {
-  console.error("Set SUPABASE_DB_URL (or manup_POSTGRES_URL_NON_POOLING) in the root .env");
-  process.exit(1);
-}
-// node-pg treats sslmode=require as full verification, which fails on the Supabase
-// pooler chain. Strip it and configure TLS explicitly below.
-const url = new URL(rawUrl);
-url.searchParams.delete("sslmode");
-url.searchParams.delete("supa");
 
 const sqlFiles = (dir) =>
   readdirSync(dir)
@@ -33,11 +21,7 @@ const sqlFiles = (dir) =>
     .sort()
     .map((f) => join(dir, f));
 
-const client = new pg.Client({
-  connectionString: url.toString(),
-  ssl: { rejectUnauthorized: false },
-});
-await client.connect();
+const client = await connect();
 
 let applied;
 try {

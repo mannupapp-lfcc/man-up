@@ -64,6 +64,8 @@ pnpm test:db                        # pgTAP tests against lfcc-manup; pending mi
                                     # inside the test transaction, everything rolled back
 pnpm gen:types                      # regenerate packages/shared/src/database.types.ts (linked project)
 pnpm exec supabase db push          # apply migrations to lfcc-manup (Kevin runs this)
+pnpm db:seed                        # fictional dev data (re-runnable); password manup-dev-password
+pnpm db:unseed                      # remove all dev data; REQUIRED before launch
 eas build --profile development --platform ios
 eas update --branch preview
 ```
@@ -76,6 +78,11 @@ self-contained (create their own orgs, ministries, and auth users inside the tra
 After every migration: `pnpm test:db` passes with the migration pending, then typecheck both
 apps. Kevin reviews and runs `supabase db push`, then `pnpm gen:types` and typecheck again.
 A migration is not done until all of these pass.
+
+Dev seed (supabase/seed/): lfcc-manup holds fictional dev data until launch. Seed rows are
+marked by uuids starting 5eed and PCO/Sanity ids starting 'seed-'; dev_unseed.sql deletes by
+those markers only. Keep new seed rows on the same markers and extend dev_unseed.sql when a
+migration adds a table.
 
 ## Environment
 
