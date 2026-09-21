@@ -159,7 +159,9 @@ migration adds a table.
 6. Pray, group chat (Realtime), Courses (Sanity webhook sync, lessons, private reflections).
 7. Serve (listings with Church Center links, serve logs) and contact logs for leaders.
 8. Sunday night scoring job per docs/scoring-plan.md; leader dashboard (mobile) and admin web.
-9. Push notifications, Sentry, EAS production profile, store submission.
+9. Push notifications, Sentry, EAS production profile, store submission. Also the weekly
+   check-in (1 to 5 plus optional note, visible to his group only; group pulse for leaders;
+   answerable from the push; answering counts in scoring, the value never does).
 
 ## Testing
 
