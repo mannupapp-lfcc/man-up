@@ -1,0 +1,2 @@
+-- Local development seed. Runs after all migrations on `supabase db reset`.
+-- Tenant rows (LFCC organization, Man Up ministry) are added once 0001_schema.sql is applied.

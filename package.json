@@ -1,0 +1,15 @@
+{
+  "name": "man-up",
+  "private": true,
+  "packageManager": "pnpm@10.24.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "typecheck": "pnpm -r typecheck",
+    "gen:types": "supabase gen types typescript --local > packages/shared/src/database.types.ts"
+  },
+  "devDependencies": {
+    "supabase": "^2.117.0"
+  }
+}
