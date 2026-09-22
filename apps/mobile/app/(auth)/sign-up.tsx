@@ -1,7 +1,10 @@
+import { router } from "expo-router";
 import { useState } from "react";
+import { Text } from "react-native";
 import { Button, ErrorText, Field, Screen } from "@/components/ui";
 import { useJoinChoice } from "@/components/JoinChoicePicker";
 import { useAuth } from "@/lib/auth";
+import { colors } from "@/lib/theme";
 
 export default function SignUp() {
   const { signUp } = useAuth();
@@ -44,6 +47,11 @@ export default function SignUp() {
         secureTextEntry autoCapitalize="none" autoCorrect={false} autoComplete="new-password" textContentType="newPassword" />
       {joinChoice.element}
       <ErrorText>{error}</ErrorText>
+      <Text style={{ color: colors.muted, fontSize: 13, lineHeight: 19 }}>
+        By creating an account you agree to the{" "}
+        <Text style={{ color: colors.gold }} onPress={() => router.push("/legal/guidelines")}>Community Guidelines</Text> and{" "}
+        <Text style={{ color: colors.gold }} onPress={() => router.push("/legal/privacy")}>Privacy Policy</Text>.
+      </Text>
       <Button title="Create account" onPress={submit} busy={busy || !joinChoice.ready} />
     </Screen>
   );

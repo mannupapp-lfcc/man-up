@@ -30,6 +30,8 @@ type AuthContextValue = {
   signUp: (input: SignUpInput) => Promise<string | null>;
   join: (fullName: string, join: JoinChoice, phone?: string) => Promise<string | null>;
   signOut: () => Promise<void>;
+  // Deletes his account and everything that is his (delete_my_account, 0015).
+  deleteAccount: () => Promise<string | null>;
   retry: () => Promise<void>;
 };
 
@@ -144,8 +146,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   }, []);
 
+  const deleteAccount = useCallback(async () => {
+    await unregisterPush().catch(() => undefined);
+    const { error } = await supabase.rpc("delete_my_account");
+    if (error) return error.message;
+    // The server session is gone with the account; clear this phone's copy.
+    await supabase.auth.signOut({ scope: "local" });
+    return null;
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ state, signIn, signUp, join, signOut, retry: () => reload() }}>
+    <AuthContext.Provider value={{ state, signIn, signUp, join, signOut, deleteAccount, retry: () => reload() }}>
       {children}
     </AuthContext.Provider>
   );

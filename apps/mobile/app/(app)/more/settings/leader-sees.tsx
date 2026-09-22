@@ -12,6 +12,10 @@ export default function WhatYourLeaderSees() {
         <Body>Your group chat is seen only by the men in your group, including your leader.</Body>
         <Body>It never shows up on any dashboard or report.</Body>
       </Card>
+      <Card title="Your weekly check-in: your group">
+        <Body>Your 1 to 5 answer and note are seen only by the men in your group, including your leader.</Body>
+        <Body>Your leader also sees the average for the group, week by week. Your number never counts against you, and it never shows up outside your group.</Body>
+      </Card>
       <Card title="Ministry chat: everyone">
         <Body>The ministry chat is seen by every man in the ministry, including leaders and admins.</Body>
         <Body>It never shows up on any dashboard or report.</Body>
