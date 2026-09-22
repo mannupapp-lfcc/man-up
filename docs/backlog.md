@@ -40,9 +40,10 @@ each section. When an item is done, delete it (git history keeps the record).
 - **Apply 0013, 0014, 0015** (after reviewing them): 0013 fixes @everyone (the database has
   an earlier 0012 draft where any leader post alerts everyone), 0014 adds check-ins and push,
   0015 sets up account deletion. Then `pnpm gen:types`.
-- **Migration history.** `supabase login`, `supabase link --project-ref nvtclnspnhpbunrnjwya`,
-  then `supabase migration repair --status applied 0001 ... 0015` (every migration applied by
-  hand; until then prefix commands with APPLIED_MIGRATIONS=0001,...,0012).
+- **Migration history (skipped by choice).** Supabase has no record of the applied
+  migrations, so `pnpm test:db` and `pnpm gen:types` need the prefix
+  APPLIED_MIGRATIONS=0001,...,0015 (every applied version, comma separated). Running
+  `supabase migration repair --status applied <each version>` once would remove that need.
 - **New development build.** Slice 9 adds native modules (expo-notifications, expo-device,
   Sentry). The current dev client will crash on launch until `eas build --profile development`.
 - **Push credentials.** iOS: an APNs key via `eas credentials`. Android: a Firebase project, its

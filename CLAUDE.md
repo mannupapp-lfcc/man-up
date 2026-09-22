@@ -84,7 +84,8 @@ self-contained (create their own orgs, ministries, and auth users inside the tra
 After every migration: `pnpm test:db` passes with the migration pending, `pnpm gen:types`, then
 typecheck both apps. Kevin reviews and runs `supabase db push` (or pastes it into the SQL editor
 and runs `supabase migration repair --status applied <version>`). A migration is not done until
-all of these pass. Until the history is repaired, prefix commands with APPLIED_MIGRATIONS=0001,...
+all of these pass. The history is NOT repaired (Kevin's call), so every test:db and gen:types run needs
+APPLIED_MIGRATIONS=0001,...,<latest applied> in front of it.
 
 Dev seed (supabase/seed/): lfcc-manup holds fictional dev data until launch. Seed rows are
 marked by uuids starting 5eed and PCO/Sanity ids starting 'seed-'; dev_unseed.sql deletes by
