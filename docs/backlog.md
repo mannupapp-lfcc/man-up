@@ -5,6 +5,16 @@ each section. When an item is done, delete it (git history keeps the record).
 
 ## To build
 
+- **Roster change requests (needs Kevin's sign-off: new table and RLS).** Product map says
+  leaders request roster changes and admins approve (sections 3 and 5). Nothing exists yet.
+  Proposed: a new migration adding roster_change_requests (ministry_id, group_id, profile_id,
+  kind add | remove | move, target_group_id, requested_by, status pending | approved | declined
+  as a Postgres enum, decided_by, decided_at). RLS through fn_leads_group / fn_is_admin: group
+  leaders insert and read their group's requests, admins read and decide, members see nothing.
+  Approval runs in a security definer function that applies the change to group_members.
+  Screens: a "Request a change" action on the leader Roster tab, pending requests on the mobile
+  Ministry admin screen (above the health board), and on the admin web Groups page. pgTAP:
+  tenancy, members cannot read, leaders only for their own group.
 - **Edit profile (mobile).** Settings > Edit profile: a man updates his own name and phone
   (RLS already allows it; only the screen is missing). Optional: suggest his phone from his
   matched PCO roster record for him to confirm. Never auto-write from PCO.
