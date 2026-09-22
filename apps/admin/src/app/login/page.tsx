@@ -6,12 +6,18 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const { error } = await searchParams;
   const notAdmin = error === "not-admin";
   return (
-    <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-6 px-4 py-12">
+    <main className="login-layout">
+      <aside className="login-story">
+        <span className="login-eyebrow">MAN UP · MINISTRY ADMIN</span>
+        <div><h2>Stronger men.<br />Stronger <em>together.</em></h2><p>Care for your people. Equip your leaders. Make room for every man to belong.</p></div>
+        <span className="login-eyebrow">MEN OF FAITH. LEADERS OF PURPOSE.</span>
+      </aside>
+      <div className="login-form-panel"><div className="login-form-content">
       <div>
-        <Image src="/logo.png" alt="Man Up, Love First Christian Center Men's Fellowship" width={128} height={128}
+        <Image src="/logo.png" alt="Man Up, Love First Christian Center Men's Fellowship" width={72} height={72}
                className="mb-4 rounded-2xl" priority />
-        <h1 className="text-2xl font-bold">Man Up Admin</h1>
-        <p className="mt-1 text-sm text-neutral-500">For ministry admins. Men use the phone app.</p>
+        <h1 className="text-2xl font-bold">Welcome back.</h1>
+        <p className="mt-1 text-sm text-neutral-500">Sign in to care for your ministry.</p>
       </div>
       {notAdmin ? (
         <>
@@ -32,6 +38,8 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           <Submit>Sign in</Submit>
         </form>
       )}
+      <p className="login-footnote">Looking for your group? Open the Man Up mobile app.</p>
+      </div></div>
     </main>
   );
 }

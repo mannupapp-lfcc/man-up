@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { SubmitButton } from "./SubmitButton";
 
 // Small shared pieces for the admin screens. Plain server components.
 
@@ -8,7 +9,7 @@ export function Flash({ error, notice }: { error?: string | string[]; notice?: s
   if (!e && !n) return null;
   return (
     <p role={e ? "alert" : "status"}
-       className={`rounded-md px-3 py-2 text-sm ${e ? "bg-red-50 text-red-800 dark:bg-red-950 dark:text-red-200" : "bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-200"}`}>
+       className={`admin-flash rounded-md px-3 py-2 text-sm ${e ? "bg-red-50 text-red-800 dark:bg-red-950 dark:text-red-200" : "bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-200"}`}>
       {e ?? n}
     </p>
   );
@@ -16,24 +17,24 @@ export function Flash({ error, notice }: { error?: string | string[]; notice?: s
 
 export function PageTitle({ children, sub }: { children: ReactNode; sub?: ReactNode }) {
   return (
-    <div className="mb-6">
-      <h1 className="text-2xl font-bold">{children}</h1>
-      {sub ? <p className="mt-1 text-sm text-neutral-500">{sub}</p> : null}
+    <div className="page-heading">
+      <h1>{children}</h1>
+      {sub ? <p className="page-description">{sub}</p> : null}
     </div>
   );
 }
 
 export function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="mb-8">
-      <h2 className="mb-3 text-lg font-semibold">{title}</h2>
-      {children}
+    <section className="admin-section">
+      <h2 className="section-heading">{title}</h2>
+      <div className="section-body">{children}</div>
     </section>
   );
 }
 
 export const inputClass =
-  "rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/40 dark:border-navy dark:bg-navy-deep";
+  "admin-input";
 
 export function Label({ text, children }: { text: string; children: ReactNode }) {
   return (
@@ -45,16 +46,7 @@ export function Label({ text, children }: { text: string; children: ReactNode })
 }
 
 export function Submit({ children, variant = "primary" }: { children: ReactNode; variant?: "primary" | "secondary" | "danger" }) {
-  const styles = {
-    primary: "bg-gold text-black hover:bg-gold-light",
-    secondary: "border border-navy/30 text-navy hover:bg-navy/5 dark:border-gold/40 dark:text-white dark:hover:bg-navy",
-    danger: "border border-red-300 text-red-700 hover:bg-red-50 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950",
-  }[variant];
-  return (
-    <button type="submit" className={`rounded-md px-3 py-2 text-sm font-medium ${styles}`}>
-      {children}
-    </button>
-  );
+  return <SubmitButton variant={variant}>{children}</SubmitButton>;
 }
 
 export const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] as const;

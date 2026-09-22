@@ -5,7 +5,8 @@ import { placeMember } from "../groups/actions";
 import { changeRole } from "./actions";
 
 export default async function PeoplePage({ searchParams }: PageProps<"/people">) {
-  const { error, show } = await searchParams;
+  const { error, show, q } = await searchParams;
+  const query = typeof q === "string" ? q.trim() : "";
   const onlyUnplaced = show === "unplaced";
   const back = onlyUnplaced ? "/people?show=unplaced" : "/people";
   const { supabase, ministryId, userId } = await requireAdmin();
@@ -27,6 +28,7 @@ export default async function PeoplePage({ searchParams }: PageProps<"/people">)
   const rows = (people ?? [])
     .map((p) => ({ ...p, group: groupOf.get(p.profile_id) ?? null }))
     .filter((p) => !onlyUnplaced || !p.group)
+    .filter((p) => !query || [p.profiles?.full_name, p.profiles?.email, p.profiles?.phone].some((value) => value?.toLowerCase().includes(query.toLowerCase())))
     .sort((a, b) => (a.profiles?.full_name ?? "").localeCompare(b.profiles?.full_name ?? ""));
 
   return (
@@ -38,6 +40,13 @@ export default async function PeoplePage({ searchParams }: PageProps<"/people">)
         <Link href="/people" className={onlyUnplaced ? "text-navy hover:underline dark:text-gold" : "font-semibold"}>Everyone</Link>
         <Link href="/people?show=unplaced" className={onlyUnplaced ? "font-semibold" : "text-navy hover:underline dark:text-gold"}>Not in a group</Link>
       </p>
+      <form action="/people" method="get" className="people-search">
+        {onlyUnplaced ? <input type="hidden" name="show" value="unplaced" /> : null}
+        <label htmlFor="people-search" className="sr-only">Search people by name, email, or phone</label>
+        <input id="people-search" name="q" type="search" defaultValue={query} placeholder="Search by name, email, or phone…" className={inputClass} />
+        <Submit variant="secondary">Search</Submit>
+        {query ? <Link href={back} className="text-sm underline">Clear</Link> : null}
+      </form>
       <Flash error={error} />
 
       <div className="overflow-x-auto">
@@ -46,6 +55,7 @@ export default async function PeoplePage({ searchParams }: PageProps<"/people">)
             <tr><th className="py-2 pr-4">Name</th><th className="pr-4">Contact</th><th className="pr-4">Group</th><th className="pr-4">Role</th></tr>
           </thead>
           <tbody>
+            {rows.length === 0 ? <tr><td colSpan={4}>No members match this view. Try another search or choose Everyone.</td></tr> : null}
             {rows.map((p) => (
               <tr key={p.profile_id} className="border-t border-neutral-200 align-top dark:border-neutral-800">
                 <td className="py-2 pr-4">

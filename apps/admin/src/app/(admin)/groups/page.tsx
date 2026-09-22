@@ -26,6 +26,12 @@ export default async function GroupsPage({ searchParams }: PageProps<"/groups">)
       <PageTitle sub="Groups of 4 to 8 men. Active groups get their meetings scheduled 4 weeks ahead.">Groups</PageTitle>
       <Flash error={error} />
 
+      <dl className="stats-grid">
+        <div className="stat-card"><dt>Active groups</dt><dd>{(groups ?? []).filter((g) => g.status === "active").length}</dd><p>Making room for brotherhood</p></div>
+        <div className="stat-card"><dt>Ministry members</dt><dd>{members?.length ?? 0}</dd><p>Every man matters</p></div>
+        <div className="stat-card attention"><dt>Awaiting a group</dt><dd>{unplaced}</dd><p>Your next opportunity to connect</p></div>
+      </dl>
+
       {unplaced > 0 ? (
         <p className="mb-6 text-sm">
           <Link href="/people?show=unplaced" className="font-medium text-navy hover:underline dark:text-gold">
@@ -41,6 +47,7 @@ export default async function GroupsPage({ searchParams }: PageProps<"/groups">)
               <tr><th className="py-2 pr-4">Group</th><th className="pr-4">Meets</th><th className="pr-4">Leaders</th><th className="pr-4">Men</th><th>Status</th></tr>
             </thead>
             <tbody>
+              {groups?.length === 0 ? <tr><td colSpan={5}>No groups yet. Create your first group below to get started.</td></tr> : null}
               {(groups ?? []).map((g) => {
                 const active = g.group_members.filter((m) => !m.left_at);
                 const leaders = active.filter((m) => m.is_group_leader).map((m) => m.profiles?.full_name).join(", ");
@@ -52,7 +59,7 @@ export default async function GroupsPage({ searchParams }: PageProps<"/groups">)
                     <td className="pr-4">{g.meeting_day ? `${g.meeting_day} ${formatTime(g.meeting_time)}` : "Not set"}</td>
                     <td className="pr-4">{leaders || <span className="text-amber-700 dark:text-amber-400">None yet</span>}</td>
                     <td className="pr-4">{active.length}</td>
-                    <td className="capitalize">{g.status}</td>
+                    <td><span className="status-badge" data-status={g.status}>{g.status}</span></td>
                   </tr>
                 );
               })}

@@ -55,6 +55,11 @@ export default async function HealthPage({ searchParams }: PageProps<"/health">)
       <Flash error={error} notice={notice} />
       <form action={runScoringNow} className="mb-6"><Submit variant="secondary">Run scoring now</Submit></form>
 
+      <dl className="stats-grid">
+        <div className="stat-card"><dt>Healthy groups</dt><dd>{board.filter((g) => g.band === "Healthy").length}</dd><p>Building a steady rhythm</p></div>
+        <div className="stat-card attention"><dt>Groups needing attention</dt><dd>{board.filter((g) => g.band !== "Healthy").length}</dd><p>A conversation can make a difference</p></div>
+        <div className="stat-card"><dt>Season-of-life flags</dt><dd>{flags.data?.length ?? 0}</dd><p>Space for a difficult season</p></div>
+      </dl>
       <Section title="Groups">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {board.map((g) => {
@@ -63,7 +68,7 @@ export default async function HealthPage({ searchParams }: PageProps<"/health">)
             return (
               <div key={g.group_id} className={`rounded-lg border-l-4 p-4 ${BAND_STYLE[g.band] ?? ""}`}>
                 <p className="font-semibold">{groupName.get(g.group_id) ?? "Group"}</p>
-                <p className="text-sm">{g.band}, {Math.round(Number(g.total))}</p>
+                <div className="health-score"><span className="status-badge">{g.band}</span><strong>{Math.round(Number(g.total))}<small>/100</small></strong></div>
                 {triggers.map((tr) => <p key={tr} className="text-sm text-red-700 dark:text-red-300">{tr}</p>)}
                 {weak && g.band !== "Healthy" ? <p className="text-sm text-neutral-500">Weakest: {weak}</p> : null}
               </div>
