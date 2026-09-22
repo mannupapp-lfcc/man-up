@@ -99,6 +99,8 @@ migration adds a table.
 - Admin (server only): SUPABASE_SERVICE_ROLE_KEY, PCO_APP_ID, PCO_SECRET,
   SANITY_WEBHOOK_SECRET, INNGEST_SIGNING_KEY, INNGEST_EVENT_KEY, SENTRY_AUTH_TOKEN,
   EXPO_ACCESS_TOKEN (optional; only if Expo enhanced push security is on)
+- Admin (public, safe to expose): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  NEXT_PUBLIC_SENTRY_DSN. Build time (Vercel, EAS secrets): SENTRY_ORG, SENTRY_PROJECT, SENTRY_AUTH_TOKEN
 - The service role key never appears in apps/mobile or in any NEXT*PUBLIC* variable.
 - Mobile Supabase client persists the session with AsyncStorage per the Supabase Expo guide.
 

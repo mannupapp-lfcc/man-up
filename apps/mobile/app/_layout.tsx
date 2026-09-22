@@ -3,6 +3,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { AuthProvider, useAuth } from "@/lib/auth";
+import { Sentry } from "@/lib/sentry";
 import { stackScreenOptions } from "@/lib/navigation";
 import { colors } from "@/lib/theme";
 
@@ -10,7 +11,7 @@ import { colors } from "@/lib/theme";
 // never sees the welcome screen flash on launch.
 void SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+function RootLayout() {
   return (
     <AuthProvider>
       <RootStack />
@@ -18,6 +19,8 @@ export default function RootLayout() {
     </AuthProvider>
   );
 }
+
+export default Sentry.wrap(RootLayout);
 
 function RootStack() {
   const { state } = useAuth();
