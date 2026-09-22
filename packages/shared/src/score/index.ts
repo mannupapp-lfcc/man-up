@@ -48,6 +48,11 @@ export type MemberInputs = {
   activity: Date[];
   // null when he is not enrolled in an unfinished course.
   course: { completedLessonInWindow: boolean } | null;
+  // null when he cannot check in (not in a group). `weeks` are the weeks he checked
+  // in (any day inside each week); `eligibleFrom` is when he could first check in
+  // (the later of his group join and the ministry's first check-in), so weeks before
+  // the feature or before he joined never count against him.
+  checkin: { weeks: Date[]; eligibleFrom: Date } | null;
 };
 
 export function scoreMember(input: MemberInputs, config: ScoreConfig, periodEnd: Date): ScoreResult {
@@ -73,8 +78,25 @@ export function scoreMember(input: MemberInputs, config: ScoreConfig, periodEnd:
     applicable: true,
   };
 
-  // Weekly check-in: no check-in feature exists yet, so it always redistributes.
-  const checkin = na(cfg(config, "individual.checkin"));
+  // Weekly check-in: that he checked in, recency weighted per week, over the weeks
+  // he could have. The 1 to 5 value never reaches here (scoring plan section 3).
+  const kMax = cfg(config, "individual.checkin");
+  let checkin = na(kMax);
+  if (input.checkin) {
+    const bucketDays = windowDays / 4;
+    // Bucket with weight w covers ages [(4 - w) * q, (5 - w) * q); it is eligible when
+    // its newest moment is after eligibleFrom.
+    const eligible = [4, 3, 2, 1].filter((w) => periodEnd.getTime() - (4 - w) * bucketDays * DAY > input.checkin!.eligibleFrom.getTime());
+    if (eligible.length) {
+      const done = new Set<number>();
+      for (const at of input.checkin.weeks) {
+        const w = recencyWeight(at, periodEnd, windowDays);
+        if (w !== null && eligible.includes(w)) done.add(w);
+      }
+      const sum = (ws: Iterable<number>) => [...ws].reduce((s, w) => s + w, 0);
+      checkin = { earned: (kMax * sum(done)) / sum(eligible), max: kMax, applicable: true };
+    }
+  }
 
   const gMax = cfg(config, "individual.gathering");
   const gathering: Component =

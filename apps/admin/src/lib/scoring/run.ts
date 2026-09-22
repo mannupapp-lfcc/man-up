@@ -50,7 +50,7 @@ export async function scoreMinistry(db: Db, ministryId: string, now = new Date()
 
   // ---------- Load (ids, timestamps, statuses only) ----------
   const [members, placements, groups, meetings, serves, gatherings, gatheringAttendance, checkinConfig,
-    messages, ministryMessages, prayers, prayed, progress, lessons, contacts, flags, history] = await Promise.all([
+    messages, ministryMessages, prayers, prayed, progress, lessons, contacts, flags, history, checkins, firstCheckin] = await Promise.all([
     all<{ profile_id: string; role: string; profiles: { pco_person_id: string | null } | null }>((a, b) =>
       db.from("ministry_members").select("profile_id, role, profiles(pco_person_id)").eq("ministry_id", ministryId).is("left_at", null).range(a, b)),
     all<{ group_id: string; profile_id: string; joined_at: string; left_at: string | null; is_group_leader: boolean }>((a, b) =>
@@ -86,7 +86,12 @@ export async function scoreMinistry(db: Db, ministryId: string, now = new Date()
     all<{ profile_id: string; as_of: string; total: number; tier: string; velocity_alert: boolean; is_new: boolean; paused: boolean }>((a, b) =>
       db.from("member_scores").select("profile_id, as_of, total, tier, velocity_alert, is_new, paused").eq("ministry_id", ministryId)
         .lt("as_of", asOf).gte("as_of", since.slice(0, 10)).order("as_of", { ascending: false }).range(a, b)),
+    // That he checked in and when: never the 1 to 5 value or the note.
+    all<{ profile_id: string; created_at: string }>((a, b) =>
+      db.from("weekly_checkins").select("profile_id, created_at").eq("ministry_id", ministryId).gte("created_at", since).range(a, b)),
+    db.from("weekly_checkins").select("created_at").eq("ministry_id", ministryId).order("created_at").limit(1).maybeSingle(),
   ]);
+  if (firstCheckin.error) throw new Error(firstCheckin.error.message);
   if (checkinConfig.error) throw new Error(checkinConfig.error.message);
   const checkinsConfigured = Array.isArray(checkinConfig.data?.value) && checkinConfig.data.value.length > 0;
 
@@ -119,6 +124,15 @@ export async function scoreMinistry(db: Db, ministryId: string, now = new Date()
     activityOf.set(r.profile_id, list);
   }
 
+  // Group-level activity (participation spread, quiet trigger) also counts check-ins
+  // (scoring plan section 5); his own participation component does not, since
+  // check-ins are their own component.
+  const checkinsOf = new Map<string, Date[]>();
+  for (const r of checkins) checkinsOf.set(r.profile_id, [...(checkinsOf.get(r.profile_id) ?? []), new Date(r.created_at)]);
+  const groupActivityOf = (pid: string) => [...(activityOf.get(pid) ?? []), ...(checkinsOf.get(pid) ?? [])];
+  // Before the ministry's first check-in the feature did not exist: nobody is scored on it.
+  const checkinsStarted = firstCheckin.data ? new Date(firstCheckin.data.created_at) : null;
+
   const lessonsByCourse = new Map<string, string[]>();
   for (const l of lessons) lessonsByCourse.set(l.course_id, [...(lessonsByCourse.get(l.course_id) ?? []), l.id]);
   const courseOfLesson = new Map(lessons.map((l) => [l.id, l.course_id]));
@@ -147,6 +161,13 @@ export async function scoreMinistry(db: Db, ministryId: string, now = new Date()
     const inProgress = [...started].some((cid) => (lessonsByCourse.get(cid) ?? []).some((l) => !done.has(l)));
     const course = inProgress ? { completedLessonInWindow: mine.some((p) => p.completed_at && within(p.completed_at, memberWindow)) } : null;
 
+    // He can check in only while in a group, from the later of his join and the
+    // feature's start.
+    const placed = currentGroup.get(pid);
+    const eligibleFrom = placed && checkinsStarted
+      ? new Date(Math.max(t(placed.joined_at), checkinsStarted.getTime()))
+      : null;
+
     const result = scoreMember(
       {
         meetings: myMeetings,
@@ -154,6 +175,7 @@ export async function scoreMinistry(db: Db, ministryId: string, now = new Date()
         gatherings: gatheringsInput,
         activity: activityOf.get(pid) ?? [],
         course,
+        checkin: eligibleFrom ? { weeks: checkinsOf.get(pid) ?? [], eligibleFrom } : null,
       },
       config,
       now,
@@ -251,7 +273,7 @@ export async function scoreMinistry(db: Db, ministryId: string, now = new Date()
       ? Array.from({ length: weeks }, (_, w) => {
           const to = now.getTime() - w * 7 * DAY;
           const from = to - 7 * DAY;
-          const active = roster.filter((pid) => (activityOf.get(pid) ?? []).some((d) => d.getTime() > from && d.getTime() <= to));
+          const active = roster.filter((pid) => groupActivityOf(pid).some((d) => d.getTime() > from && d.getTime() <= to));
           return active.length / roster.length;
         })
       : [];
@@ -287,7 +309,7 @@ export async function scoreMinistry(db: Db, ministryId: string, now = new Date()
       triggers.push(`Attendance below ${c("group.trigger.low_attendance_pct")} percent for ${lowN} meetings in a row`);
     }
     const quietDays = c("group.trigger.quiet_days");
-    if (roster.length && !roster.some((pid) => (activityOf.get(pid) ?? []).some((d) => within(d.toISOString(), quietDays)))) {
+    if (roster.length && !roster.some((pid) => groupActivityOf(pid).some((d) => within(d.toISOString(), quietDays)))) {
       triggers.push(`No group activity in ${quietDays} days`);
     }
     if (leaderRows.some((l) => l.group_id === g.id && l.tier === "Inactive")) triggers.push("Leader is Inactive");

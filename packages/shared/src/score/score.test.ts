@@ -51,11 +51,12 @@ test("worked example (scoring plan section 11): Marcus lands Thriving", () => {
       gatherings: { held: 1, attended: 1 },
       activity: [daysAgo(2), daysAgo(9)], // "I prayed" twice, in the two most recent weeks
       course: null, // not enrolled: course points redistribute
+      checkin: null, // the worked example predates check-ins
     },
     config,
     end,
   );
-  assert.equal(r.components.checkin?.applicable, false, "check-in has no source yet and redistributes");
+  assert.equal(r.components.checkin?.applicable, false, "no check-in input: the points redistribute");
   assert.equal(r.components.course?.applicable, false);
   assert.ok(Math.abs((r.components.attendance?.earned ?? 0) - 24) < 0.01, "about 25 of 30 (plan), 24 exactly");
   assert.equal(r.components.serving?.earned, 15);
@@ -68,18 +69,18 @@ test("worked example (scoring plan section 11): Marcus lands Thriving", () => {
 test("recent silence scores lower than recent momentum with the same counts", () => {
   const early = scoreMember(
     { meetings: [{ meetingAt: daysAgo(24), status: "present" }, { meetingAt: daysAgo(3), status: "absent" }],
-      servesInServingWindow: 0, gatherings: null, activity: [], course: null }, config, end);
+      servesInServingWindow: 0, gatherings: null, activity: [], course: null, checkin: null }, config, end);
   const recent = scoreMember(
     { meetings: [{ meetingAt: daysAgo(24), status: "absent" }, { meetingAt: daysAgo(3), status: "present" }],
-      servesInServingWindow: 0, gatherings: null, activity: [], course: null }, config, end);
+      servesInServingWindow: 0, gatherings: null, activity: [], course: null, checkin: null }, config, end);
   assert.ok(recent.total > early.total);
 });
 
 test("excused counts half; nothing held means attendance does not apply", () => {
   const r = scoreMember({ meetings: [{ meetingAt: daysAgo(3), status: "excused" }], servesInServingWindow: 2,
-    gatherings: null, activity: [], course: null }, config, end);
+    gatherings: null, activity: [], course: null, checkin: null }, config, end);
   assert.equal(r.components.attendance?.earned, 15);
-  const none = scoreMember({ meetings: [], servesInServingWindow: 0, gatherings: null, activity: [], course: null }, config, end);
+  const none = scoreMember({ meetings: [], servesInServingWindow: 0, gatherings: null, activity: [], course: null, checkin: null }, config, end);
   assert.equal(none.components.attendance?.applicable, false);
 });
 
@@ -115,6 +116,30 @@ test("group health: bands and trigger override", () => {
 });
 
 test("a missing weight is an error, never a silent default", () => {
-  assert.throws(() => scoreMember({ meetings: [], servesInServingWindow: 0, gatherings: null, activity: [], course: null },
+  assert.throws(() => scoreMember({ meetings: [], servesInServingWindow: 0, gatherings: null, activity: [], course: null, checkin: null },
     { ...config, "individual.attendance": Number.NaN }, end), /individual.attendance/);
+});
+
+test("check-in: every eligible week earns full points; the value is never an input", () => {
+  const base = { meetings: [], servesInServingWindow: 0, gatherings: null, activity: [], course: null };
+  const all = scoreMember({ ...base, checkin: { weeks: [daysAgo(2), daysAgo(9), daysAgo(16), daysAgo(24)], eligibleFrom: daysAgo(60) } }, config, end);
+  assert.equal(all.components.checkin?.earned, 15);
+  const recentOnly = scoreMember({ ...base, checkin: { weeks: [daysAgo(2)], eligibleFrom: daysAgo(60) } }, config, end);
+  assert.ok(Math.abs((recentOnly.components.checkin?.earned ?? 0) - 6) < 0.01, "newest week weighs 4 of 10");
+  const oldOnly = scoreMember({ ...base, checkin: { weeks: [daysAgo(24)], eligibleFrom: daysAgo(60) } }, config, end);
+  assert.ok(Math.abs((oldOnly.components.checkin?.earned ?? 0) - 1.5) < 0.01, "oldest week weighs 1 of 10");
+});
+
+test("check-in: weeks before he could check in never count against him", () => {
+  const base = { meetings: [], servesInServingWindow: 0, gatherings: null, activity: [], course: null };
+  // Check-ins launched 5 days ago and he did this week's: full marks, not 4 of 10.
+  const launched = scoreMember({ ...base, checkin: { weeks: [daysAgo(2)], eligibleFrom: daysAgo(5) } }, config, end);
+  assert.equal(launched.components.checkin?.earned, 15);
+  // Launched 5 days ago and he skipped it: zero of the one eligible week.
+  const skipped = scoreMember({ ...base, checkin: { weeks: [], eligibleFrom: daysAgo(5) } }, config, end);
+  assert.equal(skipped.components.checkin?.earned, 0);
+  assert.equal(skipped.components.checkin?.applicable, true);
+  // Not in a group: redistributes.
+  const unplaced = scoreMember({ ...base, checkin: null }, config, end);
+  assert.equal(unplaced.components.checkin?.applicable, false);
 });
