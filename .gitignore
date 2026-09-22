@@ -35,3 +35,6 @@ supabase/.env
 .DS_Store
 *.log
 coverage/
+
+# Firebase service account keys (FCM V1): upload to EAS, never commit
+*-firebase-adminsdk-*.json

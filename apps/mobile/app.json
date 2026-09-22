@@ -16,7 +16,8 @@
         "backgroundColor": "#000000"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "org.lfcc.manup"
+      "package": "org.lfcc.manup",
+      "googleServicesFile": "./google-services.json"
     },
     "scheme": "manup",
     "plugins": [

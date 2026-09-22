@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "891451028651",
+    "project_id": "manup-b048c",
+    "storage_bucket": "manup-b048c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:891451028651:android:370a495f099330afbd73ee",
+        "android_client_info": {
+          "package_name": "org.lfcc.manup"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCxOoC8eXIGYoeZ9xplWvdapRf12ib9gwE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
