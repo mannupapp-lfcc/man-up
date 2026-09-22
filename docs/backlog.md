@@ -60,8 +60,10 @@ each section. When an item is done, delete it (git history keeps the record).
   Planning Center page (Saturday attendance starts counting).
 - **Serve picks.** Admin Planning Center page: choose the Registrations categories or
   sign-ups that count as serving.
-- **Sanity Studio.** Create the Ministry document (key `manup`), `pnpm --filter studio deploy`,
-  and the webhook once the admin site is on Vercel.
+- **Sanity Studio.** Studio now lives in the admin site at /studio (no separate deploy). In
+  sanity.io/manage > API > CORS origins, add http://localhost:3000 and the admin site's
+  production URL, both with "Allow credentials". Then create the Ministry document (key
+  `manup`) and point the webhook at <admin site>/api/sanity/webhook.
 - **Inngest production keys** (INNGEST_SIGNING_KEY, INNGEST_EVENT_KEY) when the admin site
   deploys.
 

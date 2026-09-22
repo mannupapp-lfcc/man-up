@@ -12,14 +12,19 @@
   "dependencies": {
     "@manup/shared": "workspace:*",
     "@sanity/client": "^8.6.2",
+    "@sanity/icons": "^5.2.2",
+    "@sanity/vision": "^6.15.0",
     "@sanity/webhook": "^4.0.4",
     "@sentry/nextjs": "^10.75.2",
     "@supabase/ssr": "^0.12.7",
     "inngest": "^4.20.0",
     "next": "16.3.5",
+    "next-sanity": "^13.3.4",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "server-only": "^0.0.1"
+    "sanity": "^6.15.0",
+    "server-only": "^0.0.1",
+    "styled-components": "^6.5.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
