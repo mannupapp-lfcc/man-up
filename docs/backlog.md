@@ -8,7 +8,7 @@ each section. When an item is done, delete it (git history keeps the record).
 - **Roster change requests (needs Kevin's sign-off: new table and RLS).** Product map says
   leaders request roster changes and admins approve (sections 3 and 5). Nothing exists yet.
   Proposed: a new migration adding roster_change_requests (ministry_id, group_id, profile_id,
-  kind add | remove | move, target_group_id, requested_by, status pending | approved | declined
+  kind add | remove | move (add can name a man in no group), target_group_id, requested_by, status pending | approved | declined
   as a Postgres enum, decided_by, decided_at). RLS through fn_leads_group / fn_is_admin: group
   leaders insert and read their group's requests, admins read and decide, members see nothing.
   Approval runs in a security definer function that applies the change to group_members.
