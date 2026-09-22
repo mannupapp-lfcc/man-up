@@ -1,7 +1,7 @@
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Body, Card, Loading, Screen, useColors } from "@/components/ui";
+import { Alert, Linking, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Body, Card, Chip, Loading, Screen, useColors } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { formatMeeting, useGroup } from "@/lib/group";
 import { timeAgo } from "@/lib/pray";
@@ -148,20 +148,10 @@ export default function LeaderDashboard() {
   );
 }
 
-function Chip({ label, onPress }: { label: string; onPress: () => void }) {
-  const c = useColors();
-  return (
-    <Pressable accessibilityRole="button" onPress={onPress} style={[styles.chip, { borderColor: c.accent }]}>
-      <Text style={{ color: c.accent, fontSize: 14, fontWeight: "600" }}>{label}</Text>
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 8 },
   flex: { flex: 1 },
   dot: { width: 12, height: 12, borderRadius: 6 },
-  chip: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, minHeight: 40, justifyContent: "center" },
   gridRow: { flexDirection: "row", alignItems: "center", paddingVertical: 3 },
   gridName: { width: 80, fontSize: 13 },
   gridCell: { width: 52, fontSize: 12, textAlign: "center" },

@@ -123,6 +123,17 @@ export function Button({
   );
 }
 
+// Small outlined button for row actions. Filled gold when selected.
+export function Chip({ label, onPress, selected }: { label: string; onPress: () => void; selected?: boolean }) {
+  const c = useColors();
+  return (
+    <Pressable accessibilityRole="button" accessibilityState={{ selected: !!selected }} onPress={onPress}
+      style={[styles.chip, { borderColor: c.accent }, selected && { backgroundColor: c.accent }]}>
+      <Text style={{ color: selected ? c.onAccent : c.accent, fontSize: 14, fontWeight: "600" }}>{label}</Text>
+    </Pressable>
+  );
+}
+
 export function Card({ title, children }: { title?: string; children: ReactNode }) {
   const c = useColors();
   return (
@@ -176,6 +187,7 @@ const styles = StyleSheet.create({
   button: { borderRadius: 14, paddingVertical: 16, paddingHorizontal: 16, alignItems: "center", minHeight: 54, justifyContent: "center" },
   buttonText: { fontSize: 15, fontWeight: "700", textAlign: "center" },
   card: { borderWidth: 1, borderRadius: 22, padding: 20, gap: 12, borderTopWidth: 2, shadowColor: colors.navy, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.22, shadowRadius: 16, elevation: 4 },
+  chip: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, minHeight: 40, justifyContent: "center" },
   cardTitle: { fontSize: 17, lineHeight: 23, fontWeight: "700", color: colors.text },
   actionRow: { flexDirection: "row", alignItems: "center", gap: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 20, padding: 18, minHeight: 88 },
   iconBadge: { width: 46, height: 46, borderRadius: 15, backgroundColor: colors.navy, alignItems: "center", justifyContent: "center" },

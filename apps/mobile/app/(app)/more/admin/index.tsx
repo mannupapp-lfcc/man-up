@@ -1,7 +1,8 @@
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
-import { Body, Card, Loading, Screen, useColors } from "@/components/ui";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { Body, Button, Card, Chip, Loading, Screen, useColors } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { colors } from "@/lib/theme";
@@ -36,7 +37,7 @@ function latest<T extends { as_of: string }>(rows: T[], key: (r: T) => string) {
 }
 
 // Ministry admin on the phone (product map section 5): place men who are not in a
-// group yet, and a glanceable health board. Bands and tiers only; numbers, weights,
+// group yet, create and staff groups, and a glanceable health board. Bands and tiers only; numbers, weights,
 // and season flags live on the admin website.
 export default function MinistryAdmin() {
   const c = useColors();
@@ -45,6 +46,7 @@ export default function MinistryAdmin() {
   const [data, setData] = useState<{
     groups: GroupRow[]; leaders: LeaderRow[]; groupName: Map<string, string>; name: Map<string, string>;
     unplaced: Unplaced[]; openGroups: { id: string; name: string }[];
+    allGroups: { id: string; name: string; status: string; size: number; leaders: string[] }[];
   } | null>(null);
   const [placing, setPlacing] = useState<string | null>(null);
 
@@ -56,7 +58,7 @@ export default function MinistryAdmin() {
       supabase.from("groups").select("id, name, status").eq("ministry_id", ministryId).order("name"),
       supabase.from("profiles").select("id, full_name"),
       supabase.from("ministry_members").select("profile_id, joined_at, profiles(full_name)").eq("ministry_id", ministryId).is("left_at", null),
-      supabase.from("group_members").select("profile_id").eq("ministry_id", ministryId).is("left_at", null),
+      supabase.from("group_members").select("group_id, profile_id, is_group_leader").eq("ministry_id", ministryId).is("left_at", null),
     ]);
     const placed = new Set((placements.data ?? []).map((p) => p.profile_id));
     const now = Date.now();
@@ -73,6 +75,14 @@ export default function MinistryAdmin() {
           days: Math.floor((now - new Date(m.joined_at).getTime()) / 86_400_000) }))
         .sort((a, b) => a.joinedAt.localeCompare(b.joinedAt)),
       openGroups: (groups.data ?? []).filter((g) => g.status !== "archived"),
+      allGroups: (groups.data ?? []).map((g) => {
+        const inGroup = (placements.data ?? []).filter((p) => p.group_id === g.id);
+        const nameOf = new Map((members.data ?? []).map((m) => [m.profile_id, m.profiles?.full_name ?? ""]));
+        return {
+          id: g.id, name: g.name, status: g.status, size: inGroup.length,
+          leaders: inGroup.filter((p) => p.is_group_leader).map((p) => nameOf.get(p.profile_id) ?? ""),
+        };
+      }).sort((a, b) => Number(a.status === "archived") - Number(b.status === "archived")),
     });
   }, [ministryId]);
   useFocusEffect(useCallback(() => void load(), [load]));
@@ -113,13 +123,31 @@ export default function MinistryAdmin() {
         })}
       </Card>
 
+      <Card title="Groups">
+        {data.allGroups.length === 0 ? <Body muted>No groups yet.</Body> : null}
+        {data.allGroups.map((g) => (
+          <Pressable key={g.id} accessibilityRole="button" style={({ pressed }) => [styles.row, pressed && { opacity: 0.7 }]}
+            onPress={() => router.push({ pathname: "/more/admin/[groupId]", params: { groupId: g.id } })}>
+            <View style={styles.flex}>
+              <Text style={{ color: g.status === "archived" ? c.muted : c.text, fontSize: 16, fontWeight: "700" }}>{g.name}</Text>
+              <Text style={{ color: c.muted, fontSize: 13 }}>
+                {g.status === "archived" ? "Archived" : `${g.size} ${g.size === 1 ? "man" : "men"}${g.status === "forming" ? ", forming" : ""}`}
+                {g.status !== "archived" ? (g.leaders.length ? `. Led by ${g.leaders.join(" and ")}` : ". No leader yet") : ""}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={c.muted} />
+          </Pressable>
+        ))}
+        <Button title="New group" variant="secondary" onPress={() => router.push("/more/admin/new-group")} />
+      </Card>
+
       <Body muted>
         {asOf
           ? `Scores as of ${new Date(`${asOf}T12:00:00`).toLocaleDateString(undefined, { month: "long", day: "numeric" })}. Recomputed every Sunday night.`
           : "No scores yet. They are computed every Sunday night."}
       </Body>
 
-      <Card title="Groups">
+      <Card title="Group health">
         {data.groups.length === 0 ? <Body muted>No group scores yet.</Body> : null}
         {data.groups.map((g) => {
           const weak = g.band !== "Healthy" ? weakest(g.components) : null;
@@ -159,20 +187,10 @@ export default function MinistryAdmin() {
   );
 }
 
-function Chip({ label, onPress }: { label: string; onPress: () => void }) {
-  const c = useColors();
-  return (
-    <Pressable accessibilityRole="button" onPress={onPress} style={[styles.chip, { borderColor: c.accent }]}>
-      <Text style={{ color: c.accent, fontSize: 14, fontWeight: "600" }}>{label}</Text>
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "flex-start", gap: 10, paddingVertical: 8 },
   flex: { flex: 1 },
   dot: { width: 12, height: 12, borderRadius: 6, marginTop: 5 },
   placeRow: { paddingBottom: 4 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8, paddingBottom: 8 },
-  chip: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, minHeight: 40, justifyContent: "center" },
 });

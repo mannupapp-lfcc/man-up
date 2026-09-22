@@ -25,7 +25,9 @@ export default function MoreLayout() {
 
       {/* Ministry admins only: the few admin tasks that can't wait for a desk. */}
       <Stack.Protected guard={isAdmin}>
-        <Stack.Screen name="admin" options={{ title: "Ministry admin" }} />
+        <Stack.Screen name="admin/index" options={{ title: "Ministry admin" }} />
+        <Stack.Screen name="admin/new-group" options={{ title: "New group" }} />
+        <Stack.Screen name="admin/[groupId]" options={{ title: "Group" }} />
       </Stack.Protected>
     </Stack>
   );
