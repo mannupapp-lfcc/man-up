@@ -220,5 +220,15 @@ begin
                         select %L, id, %L, 'mention' from ministry_messages where ministry_id = %L$q$,
                      m, tests.u(t, 'member'), m);
     end if;
+
+    -- Check-ins and push (0014): 'member' checked in this week and turned group chat
+    -- pushes off. push_outbox already has rows from the group chat trigger.
+    if to_regclass('public.weekly_checkins') is not null then
+      execute format($q$insert into weekly_checkins (ministry_id, group_id, profile_id, week_of, scale, note)
+                        values (%L, %L, %L, date_trunc('week', current_date)::date, 2, %L)$q$,
+                     m, g1, tests.u(t, 'member'), 'member checkin note ' || t);
+      execute format($q$insert into notification_settings (ministry_id, profile_id, group_chat)
+                        values (%L, %L, false)$q$, m, tests.u(t, 'member'));
+    end if;
   end loop;
 end $$;

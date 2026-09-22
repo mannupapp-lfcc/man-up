@@ -18,7 +18,7 @@ export type Database = {
         Row: {
           contacted_at: string
           id: string
-          leader_id: string
+          leader_id: string | null
           method: Database["public"]["Enums"]["contact_method"] | null
           ministry_id: string
           note: string | null
@@ -27,7 +27,7 @@ export type Database = {
         Insert: {
           contacted_at?: string
           id?: string
-          leader_id: string
+          leader_id?: string | null
           method?: Database["public"]["Enums"]["contact_method"] | null
           ministry_id: string
           note?: string | null
@@ -36,7 +36,7 @@ export type Database = {
         Update: {
           contacted_at?: string
           id?: string
-          leader_id?: string
+          leader_id?: string | null
           method?: Database["public"]["Enums"]["contact_method"] | null
           ministry_id?: string
           note?: string | null
@@ -1041,6 +1041,52 @@ export type Database = {
           },
         ]
       }
+      notification_settings: {
+        Row: {
+          checkin_prompts: boolean
+          group_chat: boolean
+          meeting_reminders: boolean
+          ministry_id: string
+          ministry_posts: boolean
+          profile_id: string
+          updated_at: string
+          weekly_questions: boolean
+        }
+        Insert: {
+          checkin_prompts?: boolean
+          group_chat?: boolean
+          meeting_reminders?: boolean
+          ministry_id: string
+          ministry_posts?: boolean
+          profile_id: string
+          updated_at?: string
+          weekly_questions?: boolean
+        }
+        Update: {
+          checkin_prompts?: boolean
+          group_chat?: boolean
+          meeting_reminders?: boolean
+          ministry_id?: string
+          ministry_posts?: boolean
+          profile_id?: string
+          updated_at?: string
+          weekly_questions?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_settings_ministry_id_fkey"
+            columns: ["ministry_id"]
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_settings_profile_id_fkey"
+            columns: ["profile_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           created_at: string
@@ -1103,7 +1149,7 @@ export type Database = {
           ministry_id: string
           pco_person_id: string | null
           performed_at: string
-          performed_by: string
+          performed_by: string | null
           profile_id: string
         }
         Insert: {
@@ -1112,7 +1158,7 @@ export type Database = {
           ministry_id: string
           pco_person_id?: string | null
           performed_at?: string
-          performed_by: string
+          performed_by?: string | null
           profile_id: string
         }
         Update: {
@@ -1121,7 +1167,7 @@ export type Database = {
           ministry_id?: string
           pco_person_id?: string | null
           performed_at?: string
-          performed_by?: string
+          performed_by?: string | null
           profile_id?: string
         }
         Relationships: [
@@ -1366,6 +1412,61 @@ export type Database = {
           },
         ]
       }
+      push_outbox: {
+        Row: {
+          body: string | null
+          created_at: string
+          dedupe_key: string
+          id: string
+          kind: Database["public"]["Enums"]["push_kind"]
+          ministry_id: string
+          profile_id: string
+          ref_id: string | null
+          result: string | null
+          sent_at: string | null
+          title: string | null
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          dedupe_key: string
+          id?: string
+          kind: Database["public"]["Enums"]["push_kind"]
+          ministry_id: string
+          profile_id: string
+          ref_id?: string | null
+          result?: string | null
+          sent_at?: string | null
+          title?: string | null
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          dedupe_key?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["push_kind"]
+          ministry_id?: string
+          profile_id?: string
+          ref_id?: string | null
+          result?: string | null
+          sent_at?: string | null
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_outbox_ministry_id_fkey"
+            columns: ["ministry_id"]
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "push_outbox_profile_id_fkey"
+            columns: ["profile_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       push_tokens: {
         Row: {
           created_at: string
@@ -1464,7 +1565,7 @@ export type Database = {
       score_config_changes: {
         Row: {
           changed_at: string
-          changed_by: string
+          changed_by: string | null
           id: string
           key: string
           ministry_id: string
@@ -1474,7 +1575,7 @@ export type Database = {
         }
         Insert: {
           changed_at?: string
-          changed_by: string
+          changed_by?: string | null
           id?: string
           key: string
           ministry_id: string
@@ -1484,7 +1585,7 @@ export type Database = {
         }
         Update: {
           changed_at?: string
-          changed_by?: string
+          changed_by?: string | null
           id?: string
           key?: string
           ministry_id?: string
@@ -1514,7 +1615,7 @@ export type Database = {
           id: string
           ministry_id: string
           profile_id: string
-          set_by: string
+          set_by: string | null
           starts_on: string
         }
         Insert: {
@@ -1523,7 +1624,7 @@ export type Database = {
           id?: string
           ministry_id: string
           profile_id: string
-          set_by: string
+          set_by?: string | null
           starts_on?: string
         }
         Update: {
@@ -1532,7 +1633,7 @@ export type Database = {
           id?: string
           ministry_id?: string
           profile_id?: string
-          set_by?: string
+          set_by?: string | null
           starts_on?: string
         }
         Relationships: [
@@ -1601,7 +1702,7 @@ export type Database = {
       }
       serve_claims: {
         Row: {
-          claimed_by: string
+          claimed_by: string | null
           confirmed_at: string | null
           created_at: string
           group_id: string
@@ -1610,7 +1711,7 @@ export type Database = {
           opportunity_id: string
         }
         Insert: {
-          claimed_by: string
+          claimed_by?: string | null
           confirmed_at?: string | null
           created_at?: string
           group_id: string
@@ -1619,7 +1720,7 @@ export type Database = {
           opportunity_id: string
         }
         Update: {
-          claimed_by?: string
+          claimed_by?: string | null
           confirmed_at?: string | null
           created_at?: string
           group_id?: string
@@ -1804,6 +1905,61 @@ export type Database = {
           },
         ]
       }
+      weekly_checkins: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          ministry_id: string
+          note: string | null
+          profile_id: string
+          scale: number
+          updated_at: string
+          week_of: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          ministry_id: string
+          note?: string | null
+          profile_id: string
+          scale: number
+          updated_at?: string
+          week_of: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          ministry_id?: string
+          note?: string | null
+          profile_id?: string
+          scale?: number
+          updated_at?: string
+          week_of?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_checkins_group_id_fkey"
+            columns: ["group_id"]
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weekly_checkins_ministry_id_fkey"
+            columns: ["ministry_id"]
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weekly_checkins_profile_id_fkey"
+            columns: ["profile_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       weekly_questions: {
         Row: {
           id: string
@@ -1863,6 +2019,10 @@ export type Database = {
       }
       confirm_pco_match: {
         Args: { p_pco_person_id: string; p_profile: string }
+        Returns: undefined
+      }
+      delete_my_account: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
       fn_can_read_profile: { Args: { p_profile: string }; Returns: boolean }
@@ -2023,6 +2183,10 @@ export type Database = {
         Args: { p_code: string; p_full_name?: string; p_phone?: string }
         Returns: string
       }
+      register_push_token: {
+        Args: { p_ministry: string; p_token: string }
+        Returns: undefined
+      }
       resolve_report: {
         Args: { p_remove: boolean; p_report: string }
         Returns: undefined
@@ -2044,6 +2208,26 @@ export type Database = {
         }
         Returns: undefined
       }
+      submit_checkin: {
+        Args: { p_ministry: string; p_note?: string; p_scale: number }
+        Returns: {
+          created_at: string
+          group_id: string
+          id: string
+          ministry_id: string
+          note: string | null
+          profile_id: string
+          scale: number
+          updated_at: string
+          week_of: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "weekly_checkins"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       attendance_status: "present" | "absent" | "excused"
@@ -2053,6 +2237,15 @@ export type Database = {
       ministry_role: "member" | "co_leader" | "leader" | "admin"
       prayer_status: "open" | "answered" | "archived"
       prayer_visibility: "group" | "ministry"
+      push_kind:
+        | "group_message"
+        | "ministry_mention"
+        | "ministry_post"
+        | "meeting_reminder"
+        | "attendance_prompt"
+        | "weekly_questions"
+        | "checkin_prompt"
+        | "leader_digest"
       report_status: "open" | "reviewed" | "actioned"
       report_target:
         | "group_message"
@@ -2193,6 +2386,16 @@ export const Constants = {
       ministry_role: ["member", "co_leader", "leader", "admin"],
       prayer_status: ["open", "answered", "archived"],
       prayer_visibility: ["group", "ministry"],
+      push_kind: [
+        "group_message",
+        "ministry_mention",
+        "ministry_post",
+        "meeting_reminder",
+        "attendance_prompt",
+        "weekly_questions",
+        "checkin_prompt",
+        "leader_digest",
+      ],
       report_status: ["open", "reviewed", "actioned"],
       report_target: [
         "group_message",

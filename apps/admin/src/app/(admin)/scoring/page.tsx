@@ -49,7 +49,7 @@ export default async function ScoringPage({ searchParams }: PageProps<"/scoring"
         <ul className="text-sm">
           {(changes.data ?? []).map((ch, i) => (
             <li key={i}>
-              {new Date(ch.changed_at).toLocaleDateString("en-US", { timeZone, month: "short", day: "numeric", year: "numeric" })}: {ch.key} {String(ch.old_value)} to {String(ch.new_value)} by {name.get(ch.changed_by)}. {ch.reason}
+              {new Date(ch.changed_at).toLocaleDateString("en-US", { timeZone, month: "short", day: "numeric", year: "numeric" })}: {ch.key} {String(ch.old_value)} to {String(ch.new_value)} by {(ch.changed_by && name.get(ch.changed_by)) || "a former admin"}. {ch.reason}
             </li>
           ))}
           {(changes.data ?? []).length === 0 ? <li className="text-neutral-500">No changes yet.</li> : null}

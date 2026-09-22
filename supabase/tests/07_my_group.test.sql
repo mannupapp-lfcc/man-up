@@ -3,8 +3,14 @@ begin;
 select no_plan();
 
 insert into ministry_config (ministry_id, key, value) values (tests.m('a'), 'timezone', '"America/New_York"');
-update groups set meeting_day = 'Tuesday', meeting_time = '07:00' where id = tests.g('a', 1);
-update groups set meeting_day = 'Thursday', meeting_time = '19:00' where id = tests.g('a', 2);
+-- Meeting days relative to today (New York), so no meeting falls earlier today and
+-- a 4-week window always holds exactly 4 of each. d1 = tomorrow, d2, d3 after that.
+create table tests.days as
+  select n, trim(to_char((now() at time zone 'America/New_York')::date + n, 'Day')) as name,
+         extract(isodow from (now() at time zone 'America/New_York')::date + n)::int as dow
+  from generate_series(1, 3) n;
+update groups set meeting_day = (select name from tests.days where n = 1), meeting_time = '07:00' where id = tests.g('a', 1);
+update groups set meeting_day = (select name from tests.days where n = 2), meeting_time = '19:00' where id = tests.g('a', 2);
 
 -- ---------- Schedule rules ----------
 select throws_ok($$ update groups set meeting_day = 'Tues' where id = tests.g('a', 1) $$,
@@ -26,20 +32,20 @@ select is(generate_meetings(tests.m('a'), 4), 0, 'running again creates nothing 
 reset role;
 select is(
   tests.n(format($$select 1 from meetings where group_id = %L and meeting_at > now()
-                   and extract(isodow from meeting_at at time zone 'America/New_York') = 2
+                   and extract(isodow from meeting_at at time zone 'America/New_York') = (select dow from tests.days where n = 1)
                    and (meeting_at at time zone 'America/New_York')::time = '07:00'$$, tests.g('a', 1))),
-  4, 'group 1 meetings are Tuesdays at 7:00 local time');
+  4, 'group 1 meetings are on its day at 7:00 local time');
 select is(tests.n(format('select 1 from meetings where ministry_id = %L and meeting_at > now()', tests.m('b'))),
           0, 'generation never touches another ministry');
 
 -- Changing the schedule moves future meetings on the next run.
-update groups set meeting_day = 'Wednesday' where id = tests.g('a', 1);
+update groups set meeting_day = (select name from tests.days where n = 3) where id = tests.g('a', 1);
 select tests.login('a', 'admin');
 select is(generate_meetings(tests.m('a'), 4), 4, 'new schedule creates 4 new meetings');
 reset role;
 select is(
   tests.n(format($$select 1 from meetings where group_id = %L and meeting_at > now()
-                   and extract(isodow from meeting_at at time zone 'America/New_York') = 2$$, tests.g('a', 1))),
+                   and extract(isodow from meeting_at at time zone 'America/New_York') = (select dow from tests.days where n = 1)$$, tests.g('a', 1))),
   0, 'future meetings on the old day were removed');
 select is(tests.n(format('select 1 from meetings where group_id = %L and meeting_at < now()', tests.g('a', 1))),
           2, 'past meetings were left alone');

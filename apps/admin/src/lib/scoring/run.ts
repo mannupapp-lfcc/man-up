@@ -79,7 +79,7 @@ export async function scoreMinistry(db: Db, ministryId: string, now = new Date()
       db.from("lesson_progress").select("profile_id, lesson_id, completed_at").eq("ministry_id", ministryId).range(a, b)),
     all<{ id: string; course_id: string }>((a, b) =>
       db.from("lessons").select("id, course_id").eq("ministry_id", ministryId).eq("is_published", true).range(a, b)),
-    all<{ profile_id: string; leader_id: string; contacted_at: string }>((a, b) =>
+    all<{ profile_id: string; leader_id: string | null; contacted_at: string }>((a, b) =>
       db.from("contact_logs").select("profile_id, leader_id, contacted_at").eq("ministry_id", ministryId).gte("contacted_at", since).range(a, b)),
     all<{ profile_id: string; starts_on: string; ends_on: string }>((a, b) =>
       db.from("season_flags").select("profile_id, starts_on, ends_on").eq("ministry_id", ministryId).lte("starts_on", asOf).gte("ends_on", asOf).range(a, b)),
@@ -190,7 +190,7 @@ export async function scoreMinistry(db: Db, ministryId: string, now = new Date()
   const rosterOf = (groupId: string) => placements.filter((p) => p.group_id === groupId && !p.left_at).map((p) => p.profile_id);
   const leadersOf = (groupId: string) => new Set(leaders.filter((l) => l.group_id === groupId).map((l) => l.profile_id));
   const contactedBy = (men: string[], by: Set<string>, fromMs: number, toMs: number) =>
-    new Set(contacts.filter((x) => men.includes(x.profile_id) && by.has(x.leader_id) && t(x.contacted_at) > fromMs && t(x.contacted_at) <= toMs)
+    new Set(contacts.filter((x) => men.includes(x.profile_id) && !!x.leader_id && by.has(x.leader_id) && t(x.contacted_at) > fromMs && t(x.contacted_at) <= toMs)
       .map((x) => x.profile_id));
 
   const leaderRows = leaders.map((l) => {
