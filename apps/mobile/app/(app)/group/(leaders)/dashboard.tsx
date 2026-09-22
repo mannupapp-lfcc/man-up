@@ -3,6 +3,7 @@ import { useCallback, useState } from "react";
 import { Alert, Linking, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Body, Card, Chip, Loading, Screen, useColors } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
+import { pulseByWeek, useGroupCheckins } from "@/lib/checkins";
 import { formatMeeting, useGroup } from "@/lib/group";
 import { timeAgo } from "@/lib/pray";
 import { TIER_COLOR, TIER_HINT, TREND_WORD, useGroupTiers } from "@/lib/scores";
@@ -17,6 +18,7 @@ export default function LeaderDashboard() {
   const { state: auth } = useAuth();
   const group = state.status === "ready" ? state.group : null;
   const { tiers, reload: reloadTiers } = useGroupTiers(group?.groupId ?? null);
+  const { rows: checkins } = useGroupCheckins(group?.groupId ?? null, 8);
   const [lastContact, setLastContact] = useState<Map<string, Date>>(new Map());
   const [flags, setFlags] = useState<Flag[]>([]);
   const me = auth.status === "ready" ? auth.session.user.id : null;
@@ -108,6 +110,23 @@ export default function LeaderDashboard() {
         })}
       </Card>
 
+      <Card title="Group pulse (weekly check-in)">
+        <Body muted>{"How the group says it is doing, week by week. Each man's answer is on the group's check-in screen."}</Body>
+        {!checkins || checkins.length === 0 ? <Body muted>No check-ins yet.</Body> : pulseByWeek(checkins).map((w) => (
+          <View key={w.weekOf} style={styles.pulseRow}>
+            <Text style={[styles.pulseWeek, { color: c.muted }]}>
+              {new Date(`${w.weekOf}T12:00:00`).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+            </Text>
+            <View style={[styles.pulseTrack, { backgroundColor: c.border }]}>
+              <View style={{ width: `${(w.average / 5) * 100}%`, height: "100%", borderRadius: 4, backgroundColor: c.accent }} />
+            </View>
+            <Text style={{ color: c.text, fontSize: 13, width: 92, textAlign: "right" }}>
+              {w.average.toFixed(1)} ({w.answered} of {group.roster.length})
+            </Text>
+          </View>
+        ))}
+      </Card>
+
       <Card title="Contact coverage (30 days)">
         <Body muted>{men.length - uncovered.length} of {men.length} men contacted.</Body>
         {uncovered.map((m) => (
@@ -152,6 +171,9 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 8 },
   flex: { flex: 1 },
   dot: { width: 12, height: 12, borderRadius: 6 },
+  pulseRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 3 },
+  pulseWeek: { width: 52, fontSize: 13 },
+  pulseTrack: { flex: 1, height: 8, borderRadius: 4, overflow: "hidden" },
   gridRow: { flexDirection: "row", alignItems: "center", paddingVertical: 3 },
   gridName: { width: 80, fontSize: 13 },
   gridCell: { width: 52, fontSize: 12, textAlign: "center" },

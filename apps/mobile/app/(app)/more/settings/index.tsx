@@ -12,6 +12,7 @@ export default function Settings() {
         <Body>{state.fullName}</Body>
         <Body muted>{state.session.user.email}</Body>
       </Card>
+      <Button title="Notifications" variant="secondary" onPress={() => router.push("/more/settings/notifications")} />
       <Button title="What your leader sees" variant="secondary" onPress={() => router.push("/more/settings/leader-sees")} />
       <Button title="Blocked men" variant="secondary" onPress={() => router.push("/more/settings/blocked")} />
       <Button title="Delete account" variant="secondary" onPress={() => router.push("/more/settings/delete-account")} />

@@ -3,6 +3,7 @@ import { router, type Href } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { ActionRow, Body, Button, Card, Loading, Screen, Title, useColors } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
+import { SCALE_LABEL, thisWeekOf, useGroupCheckins } from "@/lib/checkins";
 import { formatMeeting, formatSchedule, myAttendanceSummary, useGroup } from "@/lib/group";
 
 const SECTIONS: { href: Href; label: string; hint: string }[] = [
@@ -15,6 +16,9 @@ const SECTIONS: { href: Href; label: string; hint: string }[] = [
 export default function GroupOverview() {
   const { state, reload } = useGroup();
   const { state: auth } = useAuth();
+  const groupId = state.status === "ready" ? state.group?.groupId ?? null : null;
+  const { rows: checkins } = useGroupCheckins(groupId, 1);
+  const me = auth.status === "ready" ? auth.session.user.id : null;
   const ministryChat = (
     <ActionRow
       title="Ministry chat"
@@ -50,6 +54,8 @@ export default function GroupOverview() {
   const next = group.upcoming[0];
   const summary = myAttendanceSummary(group.past);
   const toMark = group.past.filter((m) => !m.markedAt).length;
+  const myCheckin = checkins?.find((r) => r.profileId === me && r.weekOf === thisWeekOf());
+  const othersIn = (checkins ?? []).filter((r) => r.profileId !== me && r.weekOf === thisWeekOf()).length;
 
   return (
     <Screen>
@@ -58,6 +64,17 @@ export default function GroupOverview() {
 
       <Card title="Next meeting">
         <Body>{next ? formatMeeting(next.meetingAt) : "No meetings scheduled yet."}</Body>
+      </Card>
+
+      <Card title="Weekly check-in">
+        {myCheckin ? (
+          <Body>You checked in: {myCheckin.scale}, {SCALE_LABEL[myCheckin.scale]?.toLowerCase()}.</Body>
+        ) : (
+          <Body>How are you really doing this week? Only your group sees it.</Body>
+        )}
+        {othersIn ? <Body muted>{othersIn} {othersIn === 1 ? "brother has" : "brothers have"} checked in this week.</Body> : null}
+        <Button title={myCheckin ? "See your group's check-ins" : "Check in"} variant={myCheckin ? "secondary" : "primary"}
+          onPress={() => router.push("/group/checkin")} />
       </Card>
 
       {group.iLead ? (

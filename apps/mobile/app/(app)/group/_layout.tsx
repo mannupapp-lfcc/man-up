@@ -26,6 +26,7 @@ function GroupStack() {
         <Stack.Screen name="meetings" options={{ title: "Meetings" }} />
         <Stack.Screen name="questions" options={{ title: "Questions" }} />
         <Stack.Screen name="roster" options={{ title: "Roster" }} />
+        <Stack.Screen name="checkin" options={{ title: "Weekly check-in" }} />
       </Stack.Protected>
 
       {/* Leader tools: only for the leader or co-leader of this group. The database

@@ -1,7 +1,9 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Tabs } from "expo-router";
-import type { ComponentProps } from "react";
+import { useEffect, type ComponentProps } from "react";
 import type { ColorValue } from "react-native";
+import { useAuth } from "@/lib/auth";
+import { registerForPush, usePushResponses } from "@/lib/notifications";
 import { colors } from "@/lib/theme";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
@@ -11,6 +13,14 @@ const icon = (name: IconName) =>
   };
 
 export default function AppLayout() {
+  const { state } = useAuth();
+  const ministryId = state.status === "ready" ? state.membership.ministryId : null;
+  // Signed in: register this phone for pushes and route taps on them.
+  useEffect(() => {
+    if (ministryId) void registerForPush(ministryId);
+  }, [ministryId]);
+  usePushResponses();
+
   return (
     <Tabs
       screenOptions={{

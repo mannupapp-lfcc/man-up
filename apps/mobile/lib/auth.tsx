@@ -1,6 +1,7 @@
 import type { Session } from "@supabase/supabase-js";
 import type { DbEnum } from "@manup/shared";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { unregisterPush } from "./notifications";
 import { supabase } from "./supabase";
 
 export type Membership = {
@@ -139,6 +140,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const signOut = useCallback(async () => {
+    await unregisterPush().catch(() => undefined);
     await supabase.auth.signOut();
   }, []);
 
