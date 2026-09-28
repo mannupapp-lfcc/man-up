@@ -1,4 +1,4 @@
-import { ChatKeyboardView } from "@/components/ChatKeyboardView";
+import { KeyboardView } from "@/components/KeyboardView";
 import { useState } from "react";
 import { Alert, FlatList, Keyboard, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -85,7 +85,7 @@ export default function MinistryChat() {
 
   return (
     <SafeAreaView style={[styles.flex, { backgroundColor: c.bg }]} edges={["left", "right"]}>
-      <ChatKeyboardView>
+      <KeyboardView>
         <FlatList
           style={styles.flex}
           keyboardDismissMode="on-drag"
@@ -163,7 +163,7 @@ export default function MinistryChat() {
             <Text style={{ color: c.onAccent, fontWeight: "700" }}>Send</Text>
           </Pressable>
         </View>
-      </ChatKeyboardView>
+      </KeyboardView>
     </SafeAreaView>
   );
 }

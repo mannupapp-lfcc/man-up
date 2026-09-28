@@ -4,7 +4,7 @@ import { Keyboard, KeyboardAvoidingView, Platform, StyleSheet, View } from "reac
 
 // Measure the unpadded viewport, not the composer: measuring a moving composer
 // would alternate between adding and removing the same keyboard space.
-export function ChatKeyboardView({ children }: { children: ReactNode }) {
+export function KeyboardView({ children }: { children: ReactNode }) {
   const headerHeight = useHeaderHeight();
   const viewport = useRef<View>(null);
   const [overlap, setOverlap] = useState(0);

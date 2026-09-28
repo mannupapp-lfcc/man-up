@@ -1,12 +1,9 @@
-import { useState, type ReactNode, type ComponentProps } from "react";
+import { useContext, useRef, useState, type ReactNode, type ComponentProps } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, useSegments, type Href } from "expo-router";
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -15,6 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "@/lib/theme";
+import { KeyboardScrollView, RevealInputContext } from "./KeyboardScrollView";
 
 // Components read colors through this hook so screens stay theme-agnostic.
 export function useColors() {
@@ -38,11 +36,9 @@ export function Screen({ children }: { children: ReactNode }) {
   const insideTabs = segments[0] === "(app)";
   return (
     <SafeAreaView style={[styles.flex, { backgroundColor: c.bg }]} edges={insideTabs ? ["left", "right"] : ["bottom", "left", "right"]}>
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-          {children}
-        </ScrollView>
-      </KeyboardAvoidingView>
+      <KeyboardScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {children}
+      </KeyboardScrollView>
     </SafeAreaView>
   );
 }
@@ -70,16 +66,19 @@ export function ErrorText({ children }: { children: ReactNode }) {
 export function Field({ label, hint, ...input }: TextInputProps & { label: string; hint?: string }) {
   const c = useColors();
   const [focused, setFocused] = useState(false);
+  const inputRef = useRef<TextInput>(null);
+  const revealInput = useContext(RevealInputContext);
   const { style, onFocus, onBlur, ...rest } = input;
   return (
     <View style={styles.field}>
       <Text style={[styles.label, { color: c.text }]}>{label}</Text>
       <TextInput
+        ref={inputRef}
         placeholderTextColor={c.muted}
-        style={[styles.input, { color: c.text, backgroundColor: c.field, borderColor: focused ? c.accent : c.border }, style]}
+        style={[styles.input, input.multiline && { maxHeight: 160 }, { color: c.text, backgroundColor: c.field, borderColor: focused ? c.accent : c.border }, style]}
         selectionColor={c.accent}
-        onFocus={(event) => { setFocused(true); onFocus?.(event); }}
-        onBlur={(event) => { setFocused(false); onBlur?.(event); }}
+        onFocus={(event) => { setFocused(true); revealInput(inputRef.current); onFocus?.(event); }}
+        onBlur={(event) => { setFocused(false); revealInput(null); onBlur?.(event); }}
         accessibilityLabel={label}
         {...rest}
       />
