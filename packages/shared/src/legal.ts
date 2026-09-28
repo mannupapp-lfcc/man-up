@@ -3,11 +3,11 @@
 // One copy of the text so the two never drift. Plain ASCII, no em dashes.
 //
 // DRAFT: the privacy policy must be reviewed by Love First Christian Center before
-// store submission, and CONTACT_EMAIL filled in (docs/backlog.md).
+// store submission (docs/backlog.md).
 
 export type LegalDoc = { title: string; updated: string; intro: string; sections: { heading: string; paragraphs: string[] }[] };
 
-export const CONTACT_EMAIL = "[contact email to be added]";
+export const CONTACT_EMAIL = "info@lovefirstchristiancenter.com";
 
 export const COMMUNITY_GUIDELINES: LegalDoc = {
   title: "Community Guidelines",
@@ -56,7 +56,7 @@ export const COMMUNITY_GUIDELINES: LegalDoc = {
 
 export const PRIVACY_POLICY: LegalDoc = {
   title: "Privacy Policy",
-  updated: "September 22, 2026",
+  updated: "September 28, 2026",
   intro:
     "Man Up is the discipleship app of the Man Up Men's Ministry at Love First Christian Center. This policy explains what the app collects, who can see it, and how to delete it.",
   sections: [

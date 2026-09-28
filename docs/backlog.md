@@ -70,8 +70,8 @@ each section. When an item is done, delete it (git history keeps the record).
 
 ## Before launch
 
-- **Privacy policy review.** packages/shared/src/legal.ts is a draft: LFCC reviews it and fills
-  in CONTACT_EMAIL (it shows "[contact email to be added]" until then). The store listings link
+- **Privacy policy review.** packages/shared/src/legal.ts is a draft: LFCC reviews it
+  (CONTACT_EMAIL is set to info@lovefirstchristiancenter.com). The store listings link
   to <admin site>/privacy; the guidelines are at /guidelines.
 - **Store submission.** `eas build --profile production`, then `eas submit` (App Store Connect
   app record and Play Console listing first; both ask for the privacy policy URL, a demo
