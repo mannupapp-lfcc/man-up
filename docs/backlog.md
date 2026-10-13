@@ -15,9 +15,10 @@ each section. When an item is done, delete it (git history keeps the record).
   Screens: a "Request a change" action on the leader Roster tab, pending requests on the mobile
   Ministry admin screen (above the health board), and on the admin web Groups page. pgTAP:
   tenancy, members cannot read, leaders only for their own group.
-- **Edit profile (mobile).** Settings > Edit profile: a man updates his own name and phone
-  (RLS already allows it; only the screen is missing). Optional: suggest his phone from his
-  matched PCO roster record for him to confirm. Never auto-write from PCO.
+- **Edit profile: PCO phone suggestion and email change.** Settings > Edit profile edits name
+  and phone. Optional: suggest his phone from his matched PCO roster record for him to
+  confirm (never auto-write from PCO). Changing his email is also changing his sign-in
+  (supabase.auth.updateUser, confirmation emails); not built.
 - **Check-in answered without opening the app.** The check-in push's 1 to 5 buttons open the
   app, which saves the answer. Saving in the background (expo-task-manager with
   opensAppToForeground false) is possible but less reliable; revisit after launch.

@@ -95,7 +95,7 @@ export default function MinistryChat() {
           keyExtractor={(m) => m.id}
           contentContainerStyle={styles.list}
           ListEmptyComponent={
-            <Text style={{ color: c.muted, textAlign: "center", transform: [{ scaleY: -1 }] }}>
+            <Text style={{ color: c.muted, textAlign: "center" }}>
               No messages yet. Say hello to the brothers.
             </Text>
           }

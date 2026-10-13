@@ -23,7 +23,7 @@ export default function Course() {
             onPress={() => router.push({ pathname: "/more/courses/[courseId]/[lessonId]", params: { courseId, lessonId: l.id } })}
             style={styles.row}
           >
-            <Text style={{ color: l.completed ? c.accent : c.muted, width: 28, fontWeight: "700" }}>{l.completed ? "Done" : l.order}</Text>
+            <Text style={{ color: l.completed ? c.accent : c.muted, width: 48, fontWeight: "700" }} numberOfLines={1}>{l.completed ? "Done" : l.order}</Text>
             <View style={styles.flex}>
               <Text style={{ color: c.text, fontSize: 16, fontWeight: l === next ? "700" : "400" }}>{l.title}</Text>
               {l === next ? <Text style={{ color: c.accent, fontSize: 13 }}>Up next</Text> : null}

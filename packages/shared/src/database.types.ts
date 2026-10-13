@@ -1046,6 +1046,7 @@ export type Database = {
           checkin_prompts: boolean
           group_chat: boolean
           meeting_reminders: boolean
+          ministry_chat: boolean
           ministry_id: string
           ministry_posts: boolean
           profile_id: string
@@ -1056,6 +1057,7 @@ export type Database = {
           checkin_prompts?: boolean
           group_chat?: boolean
           meeting_reminders?: boolean
+          ministry_chat?: boolean
           ministry_id: string
           ministry_posts?: boolean
           profile_id: string
@@ -1066,6 +1068,7 @@ export type Database = {
           checkin_prompts?: boolean
           group_chat?: boolean
           meeting_reminders?: boolean
+          ministry_chat?: boolean
           ministry_id?: string
           ministry_posts?: boolean
           profile_id?: string
@@ -2241,6 +2244,7 @@ export type Database = {
         | "group_message"
         | "ministry_mention"
         | "ministry_post"
+        | "ministry_message"
         | "meeting_reminder"
         | "attendance_prompt"
         | "weekly_questions"
@@ -2390,6 +2394,7 @@ export const Constants = {
         "group_message",
         "ministry_mention",
         "ministry_post",
+        "ministry_message",
         "meeting_reminder",
         "attendance_prompt",
         "weekly_questions",

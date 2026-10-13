@@ -12,17 +12,23 @@ type Settings = Database["public"]["Tables"]["notification_settings"]["Row"];
 const SETTING: Partial<Record<Kind, keyof Settings>> = {
   group_message: "group_chat",
   ministry_post: "ministry_posts",
+  ministry_message: "ministry_chat",
   meeting_reminder: "meeting_reminders",
   weekly_questions: "weekly_questions",
   checkin_prompt: "checkin_prompts",
 };
+
+// Off until he turns them on (no settings row means off). Everything else is on
+// until he turns it off.
+const OPT_IN = new Set<keyof Settings>(["ministry_chat"]);
 
 // Where a tap lands in the app (Expo Router paths).
 function linkFor(kind: Kind, refId: string | null) {
   switch (kind) {
     case "group_message": return "/group/chat";
     case "ministry_mention":
-    case "ministry_post": return "/group/ministry-chat";
+    case "ministry_post":
+    case "ministry_message": return "/group/ministry-chat";
     case "meeting_reminder": return "/group/meetings";
     case "attendance_prompt": return refId ? `/group/attendance/${refId}` : "/group/meetings";
     case "weekly_questions": return "/group/questions";
@@ -30,6 +36,8 @@ function linkFor(kind: Kind, refId: string | null) {
     case "leader_digest": return "/group/dashboard";
   }
 }
+
+const isMinistryChat = (kind: Kind) => kind === "ministry_mention" || kind === "ministry_post" || kind === "ministry_message";
 
 const firstName = (full: string | null | undefined) => (full ?? "").trim().split(/\s+/)[0] || "A brother";
 const clip = (text: string, max = 140) => (text.length > max ? `${text.slice(0, max - 1).trimEnd()}...` : text);
@@ -54,7 +62,7 @@ export async function drainOutbox(db: Db, limit = 500): Promise<SendSummary> {
   const profileIds = [...new Set(rows.map((r) => r.profile_id))];
   const ministryIds = [...new Set(rows.map((r) => r.ministry_id))];
   const groupMsgIds = rows.filter((r) => r.kind === "group_message" && r.ref_id).map((r) => r.ref_id!);
-  const ministryMsgIds = rows.filter((r) => (r.kind === "ministry_mention" || r.kind === "ministry_post") && r.ref_id).map((r) => r.ref_id!);
+  const ministryMsgIds = rows.filter((r) => isMinistryChat(r.kind) && r.ref_id).map((r) => r.ref_id!);
 
   const [tokens, settings, members, groupMsgs, ministryMsgs] = await Promise.all([
     db.from("push_tokens").select("profile_id, ministry_id, expo_token").in("profile_id", profileIds),
@@ -84,7 +92,7 @@ export async function drainOutbox(db: Db, limit = 500): Promise<SendSummary> {
     const k = key(r.ministry_id, r.profile_id);
     if (!isMember.has(k)) { results.set(r.id, "not_member"); summary.skipped++; continue; }
     const setting = SETTING[r.kind];
-    if (setting && settingsOf.get(k)?.[setting] === false) { results.set(r.id, "muted"); summary.muted++; continue; }
+    if (setting && (settingsOf.get(k)?.[setting] ?? !OPT_IN.has(setting)) === false) { results.set(r.id, "muted"); summary.muted++; continue; }
 
     let title = r.title;
     let body = r.body;
@@ -93,7 +101,7 @@ export async function drainOutbox(db: Db, limit = 500): Promise<SendSummary> {
       if (!m || m.ministry_id !== r.ministry_id) { results.set(r.id, "deleted"); summary.skipped++; continue; }
       title = m.groups?.name ?? "Your group";
       body = `${firstName(m.profiles?.full_name)}: ${clip(m.body)}`;
-    } else if (r.kind === "ministry_mention" || r.kind === "ministry_post") {
+    } else if (isMinistryChat(r.kind)) {
       const m = r.ref_id ? ministryMsg.get(r.ref_id) : undefined;
       if (!m || m.ministry_id !== r.ministry_id) { results.set(r.id, "deleted"); summary.skipped++; continue; }
       title = "Ministry chat";

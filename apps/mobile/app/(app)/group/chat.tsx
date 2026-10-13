@@ -118,7 +118,7 @@ export default function Chat() {
           data={messages}
           keyExtractor={(m) => m.id}
           contentContainerStyle={styles.list}
-          ListEmptyComponent={<Text style={{ color: c.muted, textAlign: "center", transform: [{ scaleY: -1 }] }}>No messages yet. Say hello to your brothers.</Text>}
+          ListEmptyComponent={<Text style={{ color: c.muted, textAlign: "center" }}>No messages yet. Say hello to your brothers.</Text>}
           renderItem={({ item: m }) => {
             const mine = m.profile_id === me;
             return (
