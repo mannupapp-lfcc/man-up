@@ -1,4 +1,4 @@
-import type { DbEnum } from "@manup/shared";
+import { scheduleText, type DbEnum } from "@manup/shared";
 import { useFocusEffect } from "expo-router";
 import { createContext, createElement, useCallback, useContext, useState, type ReactNode } from "react";
 import { useAuth } from "./auth";
@@ -22,6 +22,7 @@ export type MyGroup = {
   name: string;
   meetingDay: string | null;
   meetingTime: string | null;
+  meetingEvery: number;
   iLead: boolean;
   roster: RosterMan[];
   past: Meeting[];
@@ -51,7 +52,7 @@ export function useMyGroup() {
     if (!me) return;
     const mine = await supabase
       .from("group_members")
-      .select("group_id, is_group_leader, groups(name, meeting_day, meeting_time)")
+      .select("group_id, is_group_leader, groups(name, meeting_day, meeting_time, meeting_every_weeks)")
       .eq("profile_id", me)
       .is("left_at", null)
       .maybeSingle();
@@ -108,6 +109,7 @@ export function useMyGroup() {
         name: mine.data.groups.name,
         meetingDay: mine.data.groups.meeting_day,
         meetingTime: mine.data.groups.meeting_time,
+        meetingEvery: mine.data.groups.meeting_every_weeks,
         iLead: mine.data.is_group_leader && leaderRole,
         roster: roster.data
           .map((r) => ({
@@ -148,12 +150,12 @@ export function formatMeeting(d: Date) {
   return d.toLocaleString(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 }
 
-export function formatSchedule(day: string | null, time: string | null) {
+export function formatSchedule(day: string | null, time: string | null, every = 1) {
   if (!day) return null;
-  if (!time) return `${day}s`;
+  if (!time) return scheduleText(day, "", every);
   const [h = 0, m = 0] = time.split(":").map(Number);
   const t = new Date(2000, 0, 1, h, m).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
-  return `${day}s at ${t}`;
+  return scheduleText(day, t, every);
 }
 
 // One load of the group shared by every My Group screen (see app/(app)/group/_layout).

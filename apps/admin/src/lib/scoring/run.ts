@@ -298,7 +298,10 @@ export async function scoreMinistry(db: Db, ministryId: string, now = new Date()
     // Automatic at-risk triggers (override the score).
     const triggers: string[] = [];
     const noMeetingDays = c("group.trigger.no_meeting_days");
-    if (expected.length && !held.some((m) => within(m.meeting_at, noMeetingDays))) triggers.push(`No meeting held in ${noMeetingDays} days`);
+    // Only when a meeting was due in that window (a group meeting every 4 weeks can
+    // go longer than the window between meetings without missing one).
+    const due = expected.some((m) => within(m.meeting_at, noMeetingDays));
+    if (due && !held.some((m) => within(m.meeting_at, noMeetingDays))) triggers.push(`No meeting held in ${noMeetingDays} days`);
     const lowN = c("group.trigger.low_attendance_meetings");
     const lastN = held.slice(0, lowN);
     const rate = (m: (typeof held)[number]) => {

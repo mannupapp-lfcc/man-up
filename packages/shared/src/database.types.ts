@@ -448,6 +448,8 @@ export type Database = {
           created_at: string
           id: string
           meeting_day: string | null
+          meeting_every_weeks: number
+          meeting_start_date: string | null
           meeting_time: string | null
           ministry_id: string
           name: string
@@ -457,6 +459,8 @@ export type Database = {
           created_at?: string
           id?: string
           meeting_day?: string | null
+          meeting_every_weeks?: number
+          meeting_start_date?: string | null
           meeting_time?: string | null
           ministry_id: string
           name: string
@@ -466,6 +470,8 @@ export type Database = {
           created_at?: string
           id?: string
           meeting_day?: string | null
+          meeting_every_weeks?: number
+          meeting_start_date?: string | null
           meeting_time?: string | null
           ministry_id?: string
           name?: string
@@ -2053,6 +2059,10 @@ export type Database = {
       }
       fn_is_admin: { Args: { p_ministry: string }; Returns: boolean }
       fn_is_leader: { Args: { p_ministry: string }; Returns: boolean }
+      fn_is_meeting_week: {
+        Args: { p_day: string; p_every: number; p_start: string }
+        Returns: boolean
+      }
       fn_is_ministry_member: {
         Args: { p_ministry: string; p_profile: string }
         Returns: boolean

@@ -13,8 +13,14 @@ function readGroup(formData: FormData) {
   const day = String(formData.get("meeting_day") ?? "");
   const time = String(formData.get("meeting_time") ?? "");
   const status = String(formData.get("status") ?? "forming");
+  const every = Number(formData.get("meeting_every_weeks") ?? 1);
+  const start = String(formData.get("meeting_start_date") ?? "");
+  const meetingEvery = Number.isInteger(every) && every >= 1 && every <= 4 ? every : 1;
   return {
     name,
+    meeting_every_weeks: meetingEvery,
+    // Which weeks it meets; only used when it meets less than weekly.
+    meeting_start_date: meetingEvery > 1 && /^\d{4}-\d{2}-\d{2}$/.test(start) ? start : null,
     meeting_day: (DAYS as readonly string[]).includes(day) ? day : null,
     meeting_time: /^\d{2}:\d{2}$/.test(time) ? time : null,
     status: ((STATUSES as readonly string[]).includes(status) ? status : "forming") as DbEnum<"group_status">,
@@ -25,6 +31,7 @@ export async function createGroup(formData: FormData) {
   const { supabase, ministryId } = await requireAdmin();
   const group = readGroup(formData);
   if (!group.name) fail("/groups", "Give the group a name.");
+  if (group.meeting_every_weeks > 1 && !group.meeting_start_date) fail("/groups", "Pick the date of the first meeting, so the app knows which weeks the group meets.");
   const { data, error } = await supabase
     .from("groups")
     .insert({ ...group, ministry_id: ministryId })
@@ -41,6 +48,7 @@ export async function updateGroup(formData: FormData) {
   const id = String(formData.get("group_id"));
   const group = readGroup(formData);
   if (!group.name) fail(`/groups/${id}`, "Give the group a name.");
+  if (group.meeting_every_weeks > 1 && !group.meeting_start_date) fail(`/groups/${id}`, "Pick the date of the first meeting, so the app knows which weeks the group meets.");
   const { error } = await supabase.from("groups").update(group).eq("id", id).eq("ministry_id", ministryId);
   if (error) fail(`/groups/${id}`, error.message);
   // Moves future meetings to the new schedule (never ones with attendance).

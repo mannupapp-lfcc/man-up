@@ -10,7 +10,7 @@ export default function Serve() {
   if (state.status === "error")
     return (
       <Screen>
-        <Body>Could not load serve opportunities.</Body>
+        <Body>Could not load serve opportunities and events.</Body>
         <Button title="Try again" onPress={() => void reload()} />
       </Screen>
     );
@@ -20,7 +20,7 @@ export default function Serve() {
       {state.myServeCount > 0 ? (
         <Body muted>You have served {state.myServeCount} {state.myServeCount === 1 ? "time" : "times"}. Thank you.</Body>
       ) : null}
-      {state.opportunities.length === 0 ? <Body muted>No serve opportunities listed right now.</Body> : null}
+      {state.opportunities.length === 0 ? <Body muted>Nothing listed right now.</Body> : null}
       {state.opportunities.map((o) => {
         const claim = state.claims.get(o.id);
         return (

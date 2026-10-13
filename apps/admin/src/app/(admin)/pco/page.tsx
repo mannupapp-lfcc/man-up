@@ -126,9 +126,9 @@ export default async function PcoPage({ searchParams }: PageProps<"/pco">) {
         )}
       </Section>
 
-      <Section title="Serve opportunities">
+      <Section title="Serve & Events">
         <p className="mb-3 text-sm text-neutral-500">
-          Choose which Planning Center Registrations sign-ups appear under Serve in the app: whole categories, or single
+          Choose which Planning Center Registrations sign-ups appear under Serve &amp; Events in the app: whole categories, or single
           sign-ups. Men still sign up on Church Center.
         </p>
         {registrations === null ? (

@@ -11,7 +11,7 @@ export default async function GroupPage({ params, searchParams }: PageProps<"/gr
   const { supabase, ministryId, timeZone } = await requireAdmin();
 
   const [{ data: group }, { data: people }, { data: placements }, { data: meetings }] = await Promise.all([
-    supabase.from("groups").select("id, name, status, meeting_day, meeting_time").eq("id", id).eq("ministry_id", ministryId).maybeSingle(),
+    supabase.from("groups").select("id, name, status, meeting_day, meeting_time, meeting_every_weeks, meeting_start_date").eq("id", id).eq("ministry_id", ministryId).maybeSingle(),
     supabase
       .from("ministry_members")
       .select("profile_id, role, profiles(full_name)")

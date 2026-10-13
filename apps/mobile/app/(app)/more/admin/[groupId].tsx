@@ -25,7 +25,7 @@ export default function AdminGroup() {
   const load = useCallback(async () => {
     if (!ministryId) return;
     const [group, people, placements] = await Promise.all([
-      supabase.from("groups").select("id, name, status, meeting_day, meeting_time").eq("id", groupId).eq("ministry_id", ministryId).maybeSingle(),
+      supabase.from("groups").select("id, name, status, meeting_day, meeting_time, meeting_every_weeks, meeting_start_date").eq("id", groupId).eq("ministry_id", ministryId).maybeSingle(),
       supabase.from("ministry_members").select("profile_id, role, profiles(full_name)").eq("ministry_id", ministryId).is("left_at", null),
       supabase.from("group_members").select("group_id, profile_id, is_group_leader, groups(name)").eq("ministry_id", ministryId).is("left_at", null),
     ]);

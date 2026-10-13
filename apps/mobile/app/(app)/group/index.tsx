@@ -50,7 +50,7 @@ export default function GroupOverview() {
       </Screen>
     );
 
-  const schedule = formatSchedule(group.meetingDay, group.meetingTime);
+  const schedule = formatSchedule(group.meetingDay, group.meetingTime, group.meetingEvery);
   const next = group.upcoming[0];
   const summary = myAttendanceSummary(group.past);
   const toMark = group.past.filter((m) => !m.markedAt).length;

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { scheduleText } from "@manup/shared";
 import { Flash, PageTitle, Section, Submit, formatTime } from "@/components/ui";
 import { requireAdmin } from "@/lib/admin";
 import { createGroup } from "./actions";
@@ -11,7 +12,7 @@ export default async function GroupsPage({ searchParams }: PageProps<"/groups">)
   const [{ data: groups }, { data: members }, { data: placed }] = await Promise.all([
     supabase
       .from("groups")
-      .select("id, name, status, meeting_day, meeting_time, group_members(is_group_leader, left_at, profiles(full_name))")
+      .select("id, name, status, meeting_day, meeting_time, meeting_every_weeks, group_members(is_group_leader, left_at, profiles(full_name))")
       .eq("ministry_id", ministryId)
       .order("status")
       .order("name"),
@@ -56,7 +57,7 @@ export default async function GroupsPage({ searchParams }: PageProps<"/groups">)
                     <td className="py-2 pr-4">
                       <Link href={`/groups/${g.id}`} className="font-medium text-navy hover:underline dark:text-gold">{g.name}</Link>
                     </td>
-                    <td className="pr-4">{g.meeting_day ? `${g.meeting_day} ${formatTime(g.meeting_time)}` : "Not set"}</td>
+                    <td className="pr-4">{g.meeting_day ? scheduleText(g.meeting_day, formatTime(g.meeting_time), g.meeting_every_weeks) : "Not set"}</td>
                     <td className="pr-4">{leaders || <span className="text-amber-700 dark:text-amber-400">None yet</span>}</td>
                     <td className="pr-4">{active.length}</td>
                     <td><span className="status-badge" data-status={g.status}>{g.status}</span></td>

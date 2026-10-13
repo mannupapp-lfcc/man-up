@@ -15,8 +15,8 @@ export default function MoreLayout() {
       <Stack.Screen name="courses/index" options={{ title: "Courses" }} />
       <Stack.Screen name="courses/[courseId]/index" options={{ title: "Course" }} />
       <Stack.Screen name="courses/[courseId]/[lessonId]" options={{ title: "Lesson" }} />
-      <Stack.Screen name="serve/index" options={{ title: "Serve" }} />
-      <Stack.Screen name="serve/[opportunityId]" options={{ title: "Serve" }} />
+      <Stack.Screen name="serve/index" options={{ title: "Serve & Events" }} />
+      <Stack.Screen name="serve/[opportunityId]" options={{ title: "Details" }} />
       <Stack.Screen name="progress" options={{ title: "My Progress" }} />
       <Stack.Screen name="settings/index" options={{ title: "Settings" }} />
       <Stack.Screen name="settings/profile" options={{ title: "Edit profile" }} />

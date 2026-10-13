@@ -9,7 +9,7 @@ type Item = { href: Href; label: string; subtitle: string; icon: ComponentProps<
 
 const ITEMS: Item[] = [
   { href: "/more/courses", label: "Courses", subtitle: "Build your faith, one lesson at a time.", icon: "book-outline" },
-  { href: "/more/serve", label: "Serve", subtitle: "Find a way to make a difference.", icon: "hammer-outline" },
+  { href: "/more/serve", label: "Serve & Events", subtitle: "Serve, or sign up for what is coming up.", icon: "hammer-outline" },
   { href: "/more/progress", label: "My Progress", subtitle: "Reflect on your journey and growth.", icon: "trending-up-outline" },
   { href: "/more/settings", label: "Settings", subtitle: "Your account, privacy, and preferences.", icon: "settings-outline" },
 ];

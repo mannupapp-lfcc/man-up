@@ -1,4 +1,4 @@
-import type { DbEnum } from "@manup/shared";
+import { MEETING_EVERY, everyLabel, isMeetingWeek, type DbEnum } from "@manup/shared";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Button, Chip, ErrorText, Field, useColors } from "./ui";
@@ -9,8 +9,29 @@ export type GroupValues = {
   name: string;
   meeting_day: string | null;
   meeting_time: string | null; // "HH:MM" (24-hour), as the database stores it
+  meeting_every_weeks: number; // 1 = every week, 2 = every other week, up to 4
+  meeting_start_date: string | null; // "YYYY-MM-DD"; says which weeks when not weekly
   status: DbEnum<"group_status">;
 };
+
+const localIso = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+// The next `count` dates (from today) that fall on the given weekday.
+function nextDates(day: string, count: number) {
+  const target = (DAYS.indexOf(day as (typeof DAYS)[number]) + 1) % 7; // JS: 0 = Sunday
+  const d = new Date();
+  d.setHours(12, 0, 0, 0);
+  d.setDate(d.getDate() + ((target - d.getDay() + 7) % 7));
+  return Array.from({ length: count }, (_, i) => {
+    const next = new Date(d);
+    next.setDate(d.getDate() + 7 * i);
+    return localIso(next);
+  });
+}
+
+const shortDate = (iso: string) =>
+  new Date(`${iso}T12:00:00`).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 
 // "7", "7pm", "7:30 PM", "19:00" -> "19:00". Empty -> null. Unreadable -> undefined.
 export function parseTime(text: string): string | null | undefined {
@@ -48,6 +69,9 @@ export function GroupForm({ initial, submitLabel, onSubmit }: {
   const [name, setName] = useState(initial?.name ?? "");
   const [day, setDay] = useState<string | null>(initial?.meeting_day ?? null);
   const [time, setTime] = useState(formatTime(initial?.meeting_time ?? null));
+  const [every, setEvery] = useState(initial?.meeting_every_weeks ?? 1);
+  // Kept as the saved date; the chips below show it as the upcoming meeting week.
+  const [start, setStart] = useState<string | null>(initial?.meeting_start_date ?? null);
   const [status, setStatus] = useState<DbEnum<"group_status">>(initial?.status ?? "forming");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -57,9 +81,13 @@ export function GroupForm({ initial, submitLabel, onSubmit }: {
     const meetingTime = parseTime(time);
     if (!name.trim()) return setError("Give the group a name.");
     if (meetingTime === undefined) return setError("Enter the time like 7:00 PM.");
+    if (every > 1 && !start) return setError("Pick the date of the first meeting.");
     setError(null);
     setBusy(true);
-    const message = await onSubmit({ name: name.trim(), meeting_day: day, meeting_time: meetingTime, status });
+    const message = await onSubmit({
+      name: name.trim(), meeting_day: day, meeting_time: meetingTime, status,
+      meeting_every_weeks: every, meeting_start_date: every > 1 ? start : null,
+    });
     setBusy(false);
     if (message) setError(message);
   };
@@ -73,6 +101,26 @@ export function GroupForm({ initial, submitLabel, onSubmit }: {
           {DAYS.map((d) => <Chip key={d} label={d.slice(0, 3)} selected={day === d} onPress={() => setDay(day === d ? null : d)} />)}
         </View>
       </View>
+      <View style={styles.block}>
+        <Text style={[styles.label, { color: c.text }]}>How often</Text>
+        <View style={styles.chips}>
+          {MEETING_EVERY.map((n) => <Chip key={n} label={everyLabel(n)} selected={every === n} onPress={() => setEvery(n)} />)}
+        </View>
+      </View>
+      {every > 1 ? (
+        <View style={styles.block}>
+          <Text style={[styles.label, { color: c.text }]}>First meeting</Text>
+          {day ? (
+            <View style={styles.chips}>
+              {nextDates(day, every).map((d) => (
+                <Chip key={d} label={shortDate(d)} selected={!!start && isMeetingWeek(d, every, start)} onPress={() => setStart(d)} />
+              ))}
+            </View>
+          ) : (
+            <Text style={{ color: c.muted, fontSize: 13 }}>Pick the day first.</Text>
+          )}
+        </View>
+      ) : null}
       <Field label="At" value={time} onChangeText={setTime} placeholder="7:00 PM" autoCapitalize="none" autoCorrect={false} hint="Local time. Leave blank if not set yet." />
       <View style={styles.block}>
         <Text style={[styles.label, { color: c.text }]}>Status</Text>
