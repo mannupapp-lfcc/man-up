@@ -98,7 +98,9 @@ migration adds a table.
   EXPO_PUBLIC_SENTRY_DSN
 - Admin (server only): SUPABASE_SERVICE_ROLE_KEY, PCO_APP_ID, PCO_SECRET,
   SANITY_WEBHOOK_SECRET, INNGEST_SIGNING_KEY, INNGEST_EVENT_KEY, SENTRY_AUTH_TOKEN,
-  EXPO_ACCESS_TOKEN (optional; only if Expo enhanced push security is on)
+  EXPO_ACCESS_TOKEN (optional; only if Expo enhanced push security is on),
+  MAIL_HOST, MAIL_PORT, GOOGLE_EMAIL, GOOGLE_EMAIL_PASSWORD (Gmail app password), and
+  SUPPORT_TO (recipients, comma separated) for the /support contact form
 - Admin (public, safe to expose): NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY,
   NEXT_PUBLIC_SENTRY_DSN. Build time (Vercel, EAS secrets): SENTRY_ORG, SENTRY_PROJECT, SENTRY_AUTH_TOKEN
 - The service role key never appears in apps/mobile or in any NEXT*PUBLIC* variable.
@@ -149,7 +151,9 @@ migration adds a table.
 - Applied migration files (changes always go in a new migration)
 - RLS policies and the fn_ministry_role / fn_is_leader helpers
 - Anything that adds a network call to a system other than Supabase, PCO (GET), Sanity,
-  Mux/Vimeo, Sentry, Expo push, or Inngest
+  Mux/Vimeo, Sentry, Expo push, Inngest, or SMTP (signed off 2026-10-13 for the admin
+  site's public /support form only: emails what the visitor typed, stores nothing, and
+  never sends app data)
 
 ## Build order (Phase 1, one slice per session)
 

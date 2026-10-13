@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import type { LegalDoc } from "@manup/shared";
 
 // Public page for the store listings (no sign-in). Same text the app shows.
@@ -15,6 +16,9 @@ export function LegalPage({ doc }: { doc: LegalDoc }) {
           {s.paragraphs.map((p) => <p key={p} className="mt-3 leading-relaxed">{p}</p>)}
         </section>
       ))}
+      <p className="mt-10 text-sm text-neutral-500">
+        Questions? <Link href="/support" className="underline">Contact us</Link>.
+      </p>
     </main>
   );
 }

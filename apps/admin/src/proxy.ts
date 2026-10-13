@@ -27,8 +27,9 @@ export async function proxy(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const signedIn = !!data?.claims;
   const path = request.nextUrl.pathname;
-  // Public: sign-in, and the privacy policy and guidelines the store listings link to.
-  const isPublic = ["/login", "/privacy", "/guidelines"].some((p) => path === p || path.startsWith(`${p}/`));
+  // Public: sign-in, and the privacy policy, guidelines, and support form the store
+  // listings link to.
+  const isPublic = ["/login", "/privacy", "/guidelines", "/support"].some((p) => path === p || path.startsWith(`${p}/`));
 
   if (!signedIn && !isPublic) {
     const redirect = NextResponse.redirect(new URL("/login", request.url));
