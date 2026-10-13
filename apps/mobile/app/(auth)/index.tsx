@@ -8,7 +8,7 @@ export default function Welcome() {
       <Image
         source={require("@/assets/logo.png")}
         style={styles.logo}
-        accessibilityLabel="Man Up. Men of faith, leaders of purpose. Love First Christian Center Men's Fellowship."
+        accessibilityLabel="Man Up. Men of faith, leaders of purpose. Be a man of God."
       />
       <Body muted>Stay connected with your brothers between Saturdays.</Body>
       <Button title="Create account" onPress={() => router.push("/sign-up")} />

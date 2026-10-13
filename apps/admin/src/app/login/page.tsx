@@ -14,7 +14,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
       </aside>
       <div className="login-form-panel"><div className="login-form-content">
       <div>
-        <Image src="/logo.png" alt="Man Up, Love First Christian Center Men's Fellowship" width={72} height={72}
+        <Image src="/logo.png" alt="Man Up. Men of faith, leaders of purpose." width={72} height={72}
                className="mb-4 rounded-2xl" priority />
         <h1 className="text-2xl font-bold">Welcome back.</h1>
         <p className="mt-1 text-sm text-neutral-500">Sign in to care for your ministry.</p>
