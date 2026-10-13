@@ -26,7 +26,7 @@ export default async function SupportPage({ searchParams }: PageProps<"/support"
         email. You can also write to <a href={`mailto:${CONTACT_EMAIL}`} className="underline">{CONTACT_EMAIL}</a>.
       </p>
       <p className="mt-3 text-sm text-neutral-500">
-        To delete your account, open the app and go to More, Settings, Delete account. If someone is in danger, call 911.
+        To delete your account, open the app and go to More, Settings, Delete account.
       </p>
 
       <div className="mt-6"><Flash error={error} notice={notice} /></div>
