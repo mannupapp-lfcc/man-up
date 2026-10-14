@@ -8,6 +8,7 @@ export default function Welcome() {
       <Image
         source={require("@/assets/logo.png")}
         style={styles.logo}
+        resizeMode="contain"
         accessibilityLabel="Man Up. Men of faith, leaders of purpose. Be a man of God."
       />
       <Body muted>Stay connected with your brothers between Saturdays.</Body>
@@ -18,5 +19,6 @@ export default function Welcome() {
 }
 
 const styles = StyleSheet.create({
-  logo: { width: "100%", maxWidth: 320, aspectRatio: 1, alignSelf: "center" },
+  // A fixed square (never wider than the screen) so it is not cropped on iPad.
+  logo: { width: 320, maxWidth: "100%", aspectRatio: 1, alignSelf: "center" },
 });
