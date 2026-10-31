@@ -2,7 +2,8 @@ import { KeyboardView } from "@/components/KeyboardView";
 import { useState } from "react";
 import { Alert, FlatList, Keyboard, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { openSafetyMenu } from "@/components/safety";
+import { Linkify } from "@/components/Linkify";
+import { openOwnMessageMenu, openSafetyMenu } from "@/components/safety";
 import { Body, Button, Loading, Screen, useColors } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { useMinistryChat, type MinistryMessage, type Person } from "@/lib/ministryChat";
@@ -66,10 +67,7 @@ export default function MinistryChat() {
   function onLongPress(m: MinistryMessage) {
     if (!me || !ministryId) return;
     if (m.profile_id === me) {
-      Alert.alert("Delete this message?", undefined, [
-        { text: "Cancel", style: "cancel" },
-        { text: "Delete", style: "destructive", onPress: () => void remove(m.id) },
-      ]);
+      openOwnMessageMenu(m.body, () => void remove(m.id));
       return;
     }
     openSafetyMenu({
@@ -80,6 +78,7 @@ export default function MinistryChat() {
       authorId: m.profile_id,
       authorName: people.get(m.profile_id)?.name,
       onBlocked: reload,
+      copyText: m.body,
     });
   }
 
@@ -191,7 +190,7 @@ function MessageBody({ message, people }: { message: MinistryMessage; people: Ma
         names.includes(part) ? (
           <Text key={i} style={{ color: c.accent, fontWeight: "700" }}>{part}</Text>
         ) : (
-          part
+          <Linkify key={i} text={part} />
         ),
       )}
     </Text>

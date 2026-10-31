@@ -2,6 +2,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { PrayerCard } from "@/components/PrayerCard";
+import { Linkify } from "@/components/Linkify";
 import { openSafetyMenu } from "@/components/safety";
 import { Body, Button, Card, ErrorText, Field, Loading, Screen, useColors } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
@@ -58,7 +59,7 @@ export default function PrayerRequestScreen() {
         full
         request={r}
         onTogglePrayed={() => act(() => setPrayed(ministryId, r.id, me, !r.iPrayed))}
-        onLongPress={r.isMine ? undefined : () => openSafetyMenu({ ministryId, me, targetType: "prayer_request", targetId: r.id, authorId: r.authorId, authorName: r.authorName, onBlocked: () => router.back() })}
+        onLongPress={r.isMine ? undefined : () => openSafetyMenu({ ministryId, me, targetType: "prayer_request", targetId: r.id, authorId: r.authorId, authorName: r.authorName, onBlocked: () => router.back(), copyText: r.body })}
       />
 
       {r.isMine ? (
@@ -93,13 +94,13 @@ export default function PrayerRequestScreen() {
         {comments?.map((cm) => (
           <Pressable
             key={cm.id}
-            onLongPress={cm.isMine ? undefined : () => openSafetyMenu({ ministryId, me, targetType: "prayer_comment", targetId: cm.id, authorId: cm.authorId, authorName: cm.authorName, onBlocked: refreshComments })}
+            onLongPress={cm.isMine ? undefined : () => openSafetyMenu({ ministryId, me, targetType: "prayer_comment", targetId: cm.id, authorId: cm.authorId, authorName: cm.authorName, onBlocked: refreshComments, copyText: cm.body })}
             style={styles.comment}
           >
             <Text style={{ color: c.text, fontWeight: "600" }}>
               {cm.isMine ? "You" : cm.authorName} <Text style={{ color: c.muted, fontWeight: "400" }}>{timeAgo(cm.createdAt)}</Text>
             </Text>
-            <Text style={{ color: c.text, fontSize: 15 }}>{cm.body}</Text>
+            <Text style={{ color: c.text, fontSize: 15 }}><Linkify text={cm.body} /></Text>
           </Pressable>
         ))}
         <View style={styles.compose}>

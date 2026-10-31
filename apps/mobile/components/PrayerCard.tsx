@@ -1,5 +1,6 @@
 import { router } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Linkify } from "@/components/Linkify";
 import { useColors } from "@/components/ui";
 import { timeAgo, type PrayerRequest } from "@/lib/pray";
 
@@ -30,12 +31,12 @@ export function PrayerCard({
         </Text>
       </View>
       <Text style={{ color: c.text, fontSize: 16, lineHeight: 25 }} numberOfLines={full ? undefined : 5}>
-        {r.body}
+        <Linkify text={r.body} />
       </Text>
       {r.answered ? (
         <View style={[styles.answered, { borderColor: c.accent }]}>
           <Text style={{ color: c.accent, fontWeight: "700" }}>Answered</Text>
-          {r.answeredNote ? <Text style={{ color: c.text, fontSize: 15 }}>{r.answeredNote}</Text> : null}
+          {r.answeredNote ? <Text style={{ color: c.text, fontSize: 15 }}><Linkify text={r.answeredNote} /></Text> : null}
         </View>
       ) : null}
       <View style={styles.actions}>

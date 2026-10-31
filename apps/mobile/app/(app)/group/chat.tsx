@@ -2,7 +2,8 @@ import { KeyboardView } from "@/components/KeyboardView";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, FlatList, Keyboard, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { openSafetyMenu } from "@/components/safety";
+import { Linkify } from "@/components/Linkify";
+import { openOwnMessageMenu, openSafetyMenu } from "@/components/safety";
 import { Loading, useColors } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { useGroup } from "@/lib/group";
@@ -82,17 +83,10 @@ export default function Chat() {
   function onLongPress(m: Message) {
     if (!me || !ministryId) return;
     if (m.profile_id === me) {
-      Alert.alert("Delete this message?", undefined, [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            await supabase.from("group_messages").delete().eq("id", m.id);
-            setMessages((prev) => prev?.filter((x) => x.id !== m.id) ?? null);
-          },
-        },
-      ]);
+      openOwnMessageMenu(m.body, async () => {
+        await supabase.from("group_messages").delete().eq("id", m.id);
+        setMessages((prev) => prev?.filter((x) => x.id !== m.id) ?? null);
+      });
       return;
     }
     openSafetyMenu({
@@ -103,6 +97,7 @@ export default function Chat() {
       authorId: m.profile_id,
       authorName: names.get(m.profile_id),
       onBlocked: load,
+      copyText: m.body,
     });
   }
 
@@ -129,7 +124,7 @@ export default function Chat() {
                 style={[styles.bubble, mine ? [styles.mine, { backgroundColor: c.navy }] : { backgroundColor: c.field, borderColor: c.border, borderWidth: 1 }]}
               >
                 {!mine ? <Text style={{ color: c.accent, fontWeight: "700", fontSize: 13 }}>{names.get(m.profile_id) ?? "Former member"}</Text> : null}
-                <Text style={{ color: c.text, fontSize: 16, lineHeight: 21 }}>{m.body}</Text>
+                <Text style={{ color: c.text, fontSize: 16, lineHeight: 21 }}><Linkify text={m.body} /></Text>
                 <Text style={{ color: c.muted, fontSize: 11, alignSelf: "flex-end" }}>{timeAgo(new Date(m.created_at))}</Text>
               </Pressable>
             );
