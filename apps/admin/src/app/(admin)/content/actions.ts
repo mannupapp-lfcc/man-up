@@ -12,7 +12,7 @@ export async function resyncContent() {
   let ok = true;
   try {
     const s = await syncContentFromSanity(createServiceClient());
-    message = `Synced ${s.courses} courses, ${s.lessons} lessons, ${s.gatherings} gathering pages, ${s.weekly} weeks of questions.` +
+    message = `Synced ${s.courses} courses, ${s.lessons} lessons and ${s.gatherings} gathering pages.` +
       (s.unpublished ? ` ${s.unpublished} no longer published.` : "") +
       (s.skipped.length ? ` Skipped: ${s.skipped.join("; ")}` : "");
   } catch (e) {

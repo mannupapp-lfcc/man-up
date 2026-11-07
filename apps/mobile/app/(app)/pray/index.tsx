@@ -56,7 +56,7 @@ export default function PrayerWall() {
           onLongPress={
             r.isMine
               ? undefined
-              : () => openSafetyMenu({ ministryId, me, targetType: "prayer_request", targetId: r.id, authorId: r.authorId, authorName: r.authorName, onBlocked: reload, copyText: r.body })
+              : () => openSafetyMenu({ ministryId, me, targetType: "prayer_request", targetId: r.id, authorId: r.authorId, authorName: r.authorName, onBlocked: reload })
           }
         />
       ))}

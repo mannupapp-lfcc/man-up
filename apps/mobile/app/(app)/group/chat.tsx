@@ -83,7 +83,7 @@ export default function Chat() {
   function onLongPress(m: Message) {
     if (!me || !ministryId) return;
     if (m.profile_id === me) {
-      openOwnMessageMenu(m.body, async () => {
+      openOwnMessageMenu(async () => {
         await supabase.from("group_messages").delete().eq("id", m.id);
         setMessages((prev) => prev?.filter((x) => x.id !== m.id) ?? null);
       });
@@ -97,7 +97,6 @@ export default function Chat() {
       authorId: m.profile_id,
       authorName: names.get(m.profile_id),
       onBlocked: load,
-      copyText: m.body,
     });
   }
 

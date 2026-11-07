@@ -59,7 +59,7 @@ export default function PrayerRequestScreen() {
         full
         request={r}
         onTogglePrayed={() => act(() => setPrayed(ministryId, r.id, me, !r.iPrayed))}
-        onLongPress={r.isMine ? undefined : () => openSafetyMenu({ ministryId, me, targetType: "prayer_request", targetId: r.id, authorId: r.authorId, authorName: r.authorName, onBlocked: () => router.back(), copyText: r.body })}
+        onLongPress={r.isMine ? undefined : () => openSafetyMenu({ ministryId, me, targetType: "prayer_request", targetId: r.id, authorId: r.authorId, authorName: r.authorName, onBlocked: () => router.back() })}
       />
 
       {r.isMine ? (
@@ -94,7 +94,7 @@ export default function PrayerRequestScreen() {
         {comments?.map((cm) => (
           <Pressable
             key={cm.id}
-            onLongPress={cm.isMine ? undefined : () => openSafetyMenu({ ministryId, me, targetType: "prayer_comment", targetId: cm.id, authorId: cm.authorId, authorName: cm.authorName, onBlocked: refreshComments, copyText: cm.body })}
+            onLongPress={cm.isMine ? undefined : () => openSafetyMenu({ ministryId, me, targetType: "prayer_comment", targetId: cm.id, authorId: cm.authorId, authorName: cm.authorName, onBlocked: refreshComments })}
             style={styles.comment}
           >
             <Text style={{ color: c.text, fontWeight: "600" }}>

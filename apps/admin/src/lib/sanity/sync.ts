@@ -12,8 +12,7 @@ const CONTENT_QUERY = `{
   },
   "gatherings": *[_type == "gatheringContent"]{
     _id, "ministryKey": ministry->key, date, topic, teacher, preworkQuestions, recap, takehomeQuestions
-  },
-  "weekly": *[_type == "weeklyQuestions"]{ _id, "ministryKey": ministry->key, weekOf, title, questions }
+  }
 }`;
 
 type Lesson = {
@@ -26,10 +25,9 @@ type Content = {
     _id: string; ministryKey?: string; date?: string; topic?: string; teacher?: string;
     preworkQuestions?: string[]; recap?: string; takehomeQuestions?: string[];
   }[];
-  weekly: { _id: string; ministryKey?: string; weekOf?: string; title?: string; questions?: string[] }[];
 };
 
-export type ContentSummary = { courses: number; lessons: number; gatherings: number; weekly: number; unpublished: number; skipped: string[] };
+export type ContentSummary = { courses: number; lessons: number; gatherings: number; unpublished: number; skipped: string[] };
 
 // Mirrors every published Sanity document into Supabase, routed by the document's
 // ministry key. Anything no longer published is marked is_published = false (never
@@ -46,7 +44,7 @@ export async function syncContentFromSanity(db: Db): Promise<ContentSummary> {
     return id;
   };
 
-  const seen = { courses: new Set<string>(), lessons: new Set<string>(), gatherings: new Set<string>(), weekly: new Set<string>() };
+  const seen = { courses: new Set<string>(), lessons: new Set<string>(), gatherings: new Set<string>() };
 
   for (const course of content.courses) {
     const mid = route(course.ministryKey, `course "${course.title}"`);
@@ -94,20 +92,9 @@ export async function syncContentFromSanity(db: Db): Promise<ContentSummary> {
     seen.gatherings.add(g._id);
   }
 
-  for (const w of content.weekly) {
-    const mid = route(w.ministryKey, `weekly questions ${w.weekOf ?? w._id}`);
-    if (!mid || !w.weekOf) continue;
-    const up = await db.from("weekly_questions").upsert(
-      { ministry_id: mid, sanity_id: w._id, week_of: w.weekOf, title: w.title ?? null, questions: w.questions ?? [], is_published: true, synced_at: now },
-      { onConflict: "sanity_id" },
-    );
-    if (up.error) throw new Error(`weekly questions ${w._id}: ${up.error.message}`);
-    seen.weekly.add(w._id);
-  }
-
   // Unpublish whatever Sanity no longer has (skip seed rows).
   let unpublished = 0;
-  const sweep = async (table: "courses" | "lessons" | "gathering_content" | "weekly_questions", keep: Set<string>) => {
+  const sweep = async (table: "courses" | "lessons" | "gathering_content", keep: Set<string>) => {
     const { data } = await db.from(table).select("sanity_id").eq("is_published", true);
     const gone = (data ?? []).map((r) => r.sanity_id).filter((id) => !keep.has(id) && !id.startsWith("seed-"));
     if (gone.length) {
@@ -118,10 +105,9 @@ export async function syncContentFromSanity(db: Db): Promise<ContentSummary> {
   await sweep("courses", seen.courses);
   await sweep("lessons", seen.lessons);
   await sweep("gathering_content", seen.gatherings);
-  await sweep("weekly_questions", seen.weekly);
 
   const summary = {
-    courses: seen.courses.size, lessons: seen.lessons.size, gatherings: seen.gatherings.size, weekly: seen.weekly.size,
+    courses: seen.courses.size, lessons: seen.lessons.size, gatherings: seen.gatherings.size,
     unpublished, skipped,
   };
   await db.from("sanity_sync_log").insert({ document_type: "all", sanity_id: "*", action: `sync ${JSON.stringify(summary)}`.slice(0, 500) });

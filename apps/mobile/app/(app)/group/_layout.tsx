@@ -34,6 +34,7 @@ function GroupStack() {
       <Stack.Protected guard={!!group?.iLead}>
         <Stack.Screen name="(leaders)/attendance/[meetingId]" options={{ title: "Mark attendance" }} />
         <Stack.Screen name="(leaders)/dashboard" options={{ title: "Leader dashboard" }} />
+        <Stack.Screen name="(leaders)/questions-edit" options={{ title: "Weekly questions" }} />
       </Stack.Protected>
     </Stack>
   );

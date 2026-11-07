@@ -110,14 +110,18 @@ export async function queueScheduled(db: Db, ministryId: string, now = new Date(
       `checkin:${local.weekOf}`, "How are you really doing?", "Tap 1 (rough week) to 5 (strong week). Only your group sees it.", null);
   }
 
-  // This week's discussion questions, once published for this week.
-  if (local.isoDow === schedule.questions_day && local.hour >= schedule.questions_hour) {
-    const { data: sets, error: e } = await db.from("weekly_questions").select("id, title")
-      .eq("ministry_id", ministryId).eq("week_of", local.weekOf).eq("is_published", true).limit(1);
+  // This week's discussion questions, written by each group's leader (0019). From
+  // questions_day/hour on, each group with a set for this week gets one push per set;
+  // a set posted later in the week goes out on the next hourly run. Edits never re-push.
+  const questionsDue = local.isoDow > schedule.questions_day ||
+    (local.isoDow === schedule.questions_day && local.hour >= schedule.questions_hour);
+  if (questionsDue) {
+    const { data: sets, error: e } = await db.from("group_weekly_questions").select("id, group_id, title")
+      .eq("ministry_id", ministryId).eq("week_of", local.weekOf);
     if (e) throw new Error(e.message);
-    const set = sets?.[0];
-    if (set) {
-      queue("weekly_questions", [...new Set(inGroups.map((p) => p.profile_id))], `weekly_questions:${set.id}`,
+    for (const set of sets ?? []) {
+      if (!groupName.has(set.group_id)) continue;
+      queue("weekly_questions", menOf(set.group_id), `weekly_questions:${set.id}`,
         "This week's questions", set.title ? `${set.title}: ready for your group.` : "New discussion questions are ready for your group.", set.id);
     }
   }

@@ -1,5 +1,4 @@
 import type { DbEnum } from "@manup/shared";
-import * as Clipboard from "expo-clipboard";
 import { Alert } from "react-native";
 import { block, report } from "@/lib/pray";
 
@@ -13,7 +12,6 @@ export function openSafetyMenu(opts: {
   authorId: string | null; // null for anonymous posts: report only
   authorName?: string | null;
   onBlocked?: () => void;
-  copyText?: string; // adds "Copy" to the menu
 }) {
   const doReport = () =>
     Alert.alert("Report this?", "A ministry admin will see only this post, never the rest of the conversation.", [
@@ -43,26 +41,16 @@ export function openSafetyMenu(opts: {
     ]);
 
   Alert.alert("Options", undefined, [
-    ...(opts.copyText ? [{ text: "Copy", onPress: () => void Clipboard.setStringAsync(opts.copyText!) }] : []),
     { text: "Report", onPress: doReport },
     ...(opts.authorId && opts.authorId !== opts.me ? [{ text: `Block ${opts.authorName ?? "this man"}`, onPress: doBlock }] : []),
     { text: "Cancel", style: "cancel" as const },
   ]);
 }
 
-// Long-press menu for his own message: copy or delete.
-export function openOwnMessageMenu(text: string, onDelete: () => void) {
-  Alert.alert("Options", undefined, [
-    { text: "Copy", onPress: () => void Clipboard.setStringAsync(text) },
-    {
-      text: "Delete",
-      style: "destructive",
-      onPress: () =>
-        Alert.alert("Delete this message?", undefined, [
-          { text: "Cancel", style: "cancel" },
-          { text: "Delete", style: "destructive", onPress: onDelete },
-        ]),
-    },
+// Long-press on his own message: confirm, then delete.
+export function openOwnMessageMenu(onDelete: () => void) {
+  Alert.alert("Delete this message?", undefined, [
     { text: "Cancel", style: "cancel" },
+    { text: "Delete", style: "destructive", onPress: onDelete },
   ]);
 }

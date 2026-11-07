@@ -443,6 +443,61 @@ export type Database = {
           },
         ]
       }
+      group_weekly_questions: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          ministry_id: string
+          posted_by: string | null
+          questions: NonNullable<Json>
+          title: string | null
+          updated_at: string
+          week_of: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          ministry_id: string
+          posted_by?: string | null
+          questions: NonNullable<Json>
+          title?: string | null
+          updated_at?: string
+          week_of: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          ministry_id?: string
+          posted_by?: string | null
+          questions?: NonNullable<Json>
+          title?: string | null
+          updated_at?: string
+          week_of?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_weekly_questions_group_id_fkey"
+            columns: ["group_id"]
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_weekly_questions_ministry_id_fkey"
+            columns: ["ministry_id"]
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_weekly_questions_posted_by_fkey"
+            columns: ["posted_by"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       groups: {
         Row: {
           created_at: string
@@ -1965,46 +2020,6 @@ export type Database = {
             foreignKeyName: "weekly_checkins_profile_id_fkey"
             columns: ["profile_id"]
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      weekly_questions: {
-        Row: {
-          id: string
-          is_published: boolean
-          ministry_id: string
-          questions: NonNullable<Json>
-          sanity_id: string
-          synced_at: string
-          title: string | null
-          week_of: string
-        }
-        Insert: {
-          id?: string
-          is_published?: boolean
-          ministry_id: string
-          questions?: NonNullable<Json>
-          sanity_id: string
-          synced_at?: string
-          title?: string | null
-          week_of: string
-        }
-        Update: {
-          id?: string
-          is_published?: boolean
-          ministry_id?: string
-          questions?: NonNullable<Json>
-          sanity_id?: string
-          synced_at?: string
-          title?: string | null
-          week_of?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "weekly_questions_ministry_id_fkey"
-            columns: ["ministry_id"]
-            referencedRelation: "ministries"
             referencedColumns: ["id"]
           },
         ]

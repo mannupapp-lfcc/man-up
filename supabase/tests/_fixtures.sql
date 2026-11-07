@@ -196,6 +196,9 @@ begin
     if to_regclass('public.gathering_content') is not null then
       execute format($q$insert into gathering_content (ministry_id, sanity_id, gathering_date, topic)
                         values (%L, %L, current_date, 'Topic')$q$, m, t || '-gc-1');
+    end if;
+    -- Ministry-wide Sanity question sets, until 0019 drops them.
+    if to_regclass('public.weekly_questions') is not null then
       execute format($q$insert into weekly_questions (ministry_id, sanity_id, week_of, questions)
                         values (%L, %L, date_trunc('week', current_date)::date, '["Q1"]')$q$, m, t || '-wq-1');
     end if;
@@ -229,6 +232,13 @@ begin
                      m, g1, tests.u(t, 'member'), 'member checkin note ' || t);
       execute format($q$insert into notification_settings (ministry_id, profile_id, group_chat)
                         values (%L, %L, false)$q$, m, tests.u(t, 'member'));
+    end if;
+
+    -- Group questions (0019): group 1's leader wrote this week's questions.
+    if to_regclass('public.group_weekly_questions') is not null then
+      execute format($q$insert into group_weekly_questions (ministry_id, group_id, week_of, title, questions, posted_by)
+                        values (%L, %L, date_trunc('week', current_date)::date, 'Group 1 questions', '["G1"]', %L)$q$,
+                     m, g1, tests.u(t, 'leader'));
     end if;
   end loop;
 end $$;

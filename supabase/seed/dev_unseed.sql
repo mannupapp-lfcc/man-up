@@ -77,6 +77,17 @@ delete from prayer_interactions
 delete from prayer_requests
  where profile_id in (select id from _seed_profiles) or group_id in (select id from _seed_groups);
 
+-- 0019: questions in seed groups (posted_by on seed men clears itself on delete).
+do $$
+begin
+  if to_regclass('public.group_weekly_questions') is not null then
+    delete from group_weekly_questions where group_id in (select id from _seed_groups);
+  end if;
+  if to_regclass('public.weekly_questions') is not null then
+    delete from weekly_questions where sanity_id like 'seed-%';
+  end if;
+end $$;
+
 delete from group_messages
  where group_id in (select id from _seed_groups) or profile_id in (select id from _seed_profiles);
 delete from group_members
@@ -88,7 +99,6 @@ delete from lesson_progress
     or lesson_id in (select id from lessons where sanity_id like 'seed-%');
 delete from lessons where sanity_id like 'seed-%';
 delete from gathering_content where sanity_id like 'seed-%';
-delete from weekly_questions where sanity_id like 'seed-%';
 delete from courses where sanity_id like 'seed-%';
 
 delete from serve_logs

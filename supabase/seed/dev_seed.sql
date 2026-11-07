@@ -291,11 +291,18 @@ begin
   from _people p cross join generate_series(1, 4) l
   where (p.n in (2, 4)) or (p.n in (6, 7) and l <= 2) or (p.n in (11, 12) and l = 1);
 
-  insert into weekly_questions (ministry_id, sanity_id, week_of, title, questions) values
-    (m, 'seed-weekly-1', (week0 at time zone 'America/New_York')::date, 'Leading at Home',
+  -- Weekly questions, written by each active group's leader (0019).
+  insert into group_weekly_questions (ministry_id, group_id, week_of, title, questions, posted_by)
+  select m, wq.grp, (week0 at time zone 'America/New_York')::date - wq.back, wq.title, wq.qs::jsonb,
+         (select id from _people where grp = wq.grp and leads and role <> 'member' order by n limit 1)
+  from (values
+    (grp_a, 0, 'Leading at Home',
      '["What does your family need from you right now?", "Who is one man you can encourage before Saturday?", "What is one step you will take, and who will check on you?"]'),
-    (m, 'seed-weekly-0', (week0 at time zone 'America/New_York')::date - 7, 'Called to Stand',
-     '["Where do you need courage this week?", "Where have you been standing on the sidelines?"]');
+    (grp_a, 7, 'Called to Stand',
+     '["Where do you need courage this week?", "Where have you been standing on the sidelines?"]'),
+    (grp_b, 0, 'Iron Sharpens Iron',
+     '["Who sharpened you this past year?", "What is one area where you want a brother to hold you accountable?"]')
+  ) wq(grp, back, title, qs);
 
   -- Gathering pages: the next one (pre-work) and the last one (recap).
   insert into gathering_content (ministry_id, sanity_id, gathering_date, topic, teacher, prework_questions, recap, takehome_questions)

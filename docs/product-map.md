@@ -69,7 +69,7 @@ Three roles, stored as a `role` field on the profile record, enforced with Supab
   - Needs a Call list plus a contact coverage tracker (which men he hasn't touched in 30 days)
   - His men's LEAD progress (to know who's ready for the next step)
 - Cannot see other groups or ministry-wide numbers.
-- Can: mark attendance (within 72 hours or the meeting doesn't count as held), log contacts with his men (one tap: called, texted, in person; no notes field), set season-of-life flags, post weekly discussion questions (or use the ministry defaults), and request roster changes (admin approves).
+- Can: mark attendance (within 72 hours or the meeting doesn't count as held), log contacts with his men (one tap: called, texted, in person; no notes field), set season-of-life flags, write his group's weekly discussion questions in the app (this week or next), and request roster changes (admin approves).
 
 ### Ministry Admin (Min. Averitte, Kevin, +1 or 2 max)
 
@@ -116,7 +116,7 @@ Fixed groups of roughly 4 to 8 men.
 
 - **Roster:** names, photos, contact preferences.
 - **Meetings & attendance:** leader marks attendance per meeting; members see their own streak only.
-- **Weekly discussion questions:** pushed ministry-wide by admin (tied to the last gathering's teaching) or customized by the leader.
+- **Weekly discussion questions:** written in the app by the group's leader or co-leader, for this week or next. Only the men in that group see them, and they get a push when the week's set is ready. There is no ministry-wide set and no Sanity authoring for these (removed 2026-11-07).
 - **Group chat:** simple chat with push notifications. Purpose-built, not a Discord clone. Long-press any message to report it (routes to admins); users can block another member (App Store requirement for user-generated content).
 - **Weekly check-in:** a lightweight "How are you really doing?" one-tap scale plus optional note, visible to the group. Gives the leader a pastoral radar without being surveillance.
 
@@ -263,9 +263,9 @@ gatherings
 gathering_intents
   id, gathering_id (fk), profile_id (fk), created_at   -- "I'm coming" taps
 
-discussion_questions
-  id, sanity_id (unique, nullable), week_of (date), source (admin|leader),
-  group_id (nullable, null = ministry-wide), questions (jsonb)
+group_weekly_questions
+  id, group_id (fk), week_of (date, Monday), title (nullable), questions (jsonb),
+  posted_by (fk, the leader or co-leader)   -- one set per group per week
 
 messages
   id, group_id (fk), profile_id (fk), body, created_at
@@ -383,7 +383,7 @@ Reuse the Eagles Nest stack, proven and already shipped through both app stores:
 - **Push:** Expo Notifications with notification quick actions (check-ins answered from the notification itself)
 - **Monitoring:** Sentry for crash and error reporting from day one
 - **Releases:** EAS Update for over-the-air fixes between App Store releases
-- **Content authoring:** Sanity Studio (courses, lessons, gatherings, question sets, serve descriptions) with one-way webhook sync into Supabase on publish; the app never reads from Sanity directly
+- **Content authoring:** Sanity Studio (courses, lessons, gatherings, serve descriptions) with one-way webhook sync into Supabase on publish; the app never reads from Sanity directly
 - **Scheduled jobs and integrations:** Inngest functions served from the Next.js admin app (apps/admin) on Vercel, plus `profiles.pco_person_id`; Planning Center API (People sync, Check-Ins) in Phase 2, optional Anthropic API drafting content into Sanity as drafts for review
 - **Deep links:** standard `Linking.openURL` to Church Center pages (URLs from ministry_config)
 
@@ -401,7 +401,7 @@ The minimum app that changes behavior.
 - **My Group:** groups, roster, chat, meetings, attendance
 - **Unplaced flow:** "get connected" home state + admin unplaced list (a new man must never sit in an empty app)
 - **Gatherings:** list/detail, pre-questions, "I'm coming," Church Center deep links
-- **Sanity Studio + publish webhook sync** for gatherings and weekly question sets (courses added to the Studio in Phase 2)
+- **Sanity Studio + publish webhook sync** for gatherings (courses added to the Studio in Phase 2)
 - **Pray:** group prayer wall with "I prayed" and answered states
 - **Leader dashboard v1:** attendance grid + "needs a call" list
 - **Contact log:** one-tap contact logging from day one (scores need this history before they can compute)
@@ -418,7 +418,7 @@ _Cut line: no courses, no serve, no LEAD tracking, no admin analytics beyond the
 ### Phase 2: Grow (Sept to Oct 2026)
 
 - **Course engine + Stepping Up** content (start dates, weekly checkpoints)
-- Weekly discussion questions pushed ministry-wide, tied to gathering recaps
+- Weekly discussion questions written by each group's leader in the app
 - Weekly check-ins
 - **Scoring engine + dashboards:** individual tiers, velocity flags, Monday digests, leader consistency view, group health board (computes retroactively from Phase 1 data)
 - **Planning Center integration:** People sync + Check-Ins attendance flow
@@ -496,7 +496,7 @@ The app is built single-church but **multi-tenant-shaped**, because adding tenan
 
 ## 12. Content Architecture (Sanity + Supabase)
 
-**Sanity authors, Supabase runs.** All human-written content (courses, lessons, gathering entries, weekly question sets, serve descriptions) is created and edited in Sanity Studio, which provides drafts, rich text, revision history, media handling, and scheduled publishing without building any admin content UI. All operational data (people, groups, progress, attendance, scores, chat, prayer) lives only in Supabase.
+**Sanity authors, Supabase runs.** All human-written content (courses, lessons, gathering entries, serve descriptions) is created and edited in Sanity Studio, which provides drafts, rich text, revision history, media handling, and scheduled publishing without building any admin content UI. All operational data (people, groups, progress, attendance, scores, chat, prayer) lives only in Supabase.
 
 **One-way sync, app reads Supabase only:**
 
@@ -509,7 +509,7 @@ Publishing is live in the app within seconds, with no app release. Drafts never 
 
 **AI drafting lands in Sanity, not in the app.** The transcript-to-content pipeline (section 13) writes draft documents into Sanity via its API, same pattern as the existing sermon-to-blog workflow. Review and publish happen in Studio; the human approval gate is the publish button.
 
-**What stays in the in-app admin dashboard:** operational controls only: groups, roles, invite codes, placements, score_config, and scheduling when question sets push to groups. Sanity authors the questions; the app decides when they land.
+**What stays in the in-app admin dashboard:** operational controls only: groups, roles, invite codes, placements, and score_config. Weekly discussion questions are not admin content: group leaders write them in the app.
 
 **Multi-tenant:** one Studio, required `ministry` reference on every document type, sync routes by it. A future ministry gets role-scoped access in the same Studio, or its own dataset if harder separation is wanted. No schema change either way.
 
@@ -532,7 +532,7 @@ Publishing is live in the app within seconds, with no app release. Drafts never 
 - **People sync:** a nightly Inngest function reads the Man Up PCO group roster (GET only) into pco_roster and suggests matches to profiles by email/phone. Suggestions land pre-filled in the admin PCO Match queue; an admin confirms a suggestion or searches and matches manually. Only that confirmation sets profiles.pco_person_id; the sync never writes it. One member database, not two.
 - **Gathering attendance from PCO Check-Ins:** official check-in data flows in automatically; the QR code becomes the fallback.
 - **Course progress from video webhooks:** Mux/Vimeo completion events mark lessons done.
-- **AI-drafted weekly questions and gathering recaps:** pipeline drafts from the teaching transcript into Sanity as draft documents (same pattern as the sermon-to-blog workflow); admin reviews and publishes in Studio, which syncs to the app. Human approval always required before anything reaches members.
+- **AI-drafted gathering recaps:** pipeline drafts from the teaching transcript into Sanity as draft documents (same pattern as the sermon-to-blog workflow); admin reviews and publishes in Studio, which syncs to the app. Human approval always required before anything reaches members.
 
 ### Phase 3 automations
 

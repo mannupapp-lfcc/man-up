@@ -120,26 +120,6 @@ export async function saveProgress(input: { ministryId: string; me: string; less
   return error?.message ?? null;
 }
 
-export type WeeklyQuestions = { title: string | null; weekOf: string; questions: string[] };
-
-// This week's questions (the latest set on or before today).
-export function useWeeklyQuestions() {
-  return useLoad<WeeklyQuestions | undefined>(async () => {
-    const today = new Date().toISOString().slice(0, 10);
-    const { data, error } = await supabase
-      .from("weekly_questions")
-      .select("title, week_of, questions")
-      .lte("week_of", today)
-      .order("week_of", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (error) return null;
-    if (!data) return undefined;
-    const q = data.questions;
-    return { title: data.title, weekOf: data.week_of, questions: Array.isArray(q) ? q.filter((x): x is string => typeof x === "string") : [] };
-  }, []);
-}
-
 export type GatheringContent = {
   topic: string | null;
   teacher: string | null;

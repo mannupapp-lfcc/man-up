@@ -67,7 +67,7 @@ export default function MinistryChat() {
   function onLongPress(m: MinistryMessage) {
     if (!me || !ministryId) return;
     if (m.profile_id === me) {
-      openOwnMessageMenu(m.body, () => void remove(m.id));
+      openOwnMessageMenu(() => void remove(m.id));
       return;
     }
     openSafetyMenu({
@@ -78,7 +78,6 @@ export default function MinistryChat() {
       authorId: m.profile_id,
       authorName: people.get(m.profile_id)?.name,
       onBlocked: reload,
-      copyText: m.body,
     });
   }
 
