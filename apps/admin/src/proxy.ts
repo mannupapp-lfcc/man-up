@@ -28,8 +28,8 @@ export async function proxy(request: NextRequest) {
   const signedIn = !!data?.claims;
   const path = request.nextUrl.pathname;
   // Public: sign-in, and the privacy policy, guidelines, and support form the store
-  // listings link to.
-  const isPublic = ["/login", "/privacy", "/guidelines", "/support"].some((p) => path === p || path.startsWith(`${p}/`));
+  // listings link to, and the App Store QR code page.
+  const isPublic = ["/login", "/privacy", "/guidelines", "/support", "/download"].some((p) => path === p || path.startsWith(`${p}/`));
 
   if (!signedIn && !isPublic) {
     const redirect = NextResponse.redirect(new URL("/login", request.url));
