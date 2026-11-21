@@ -56,7 +56,7 @@ export const COMMUNITY_GUIDELINES: LegalDoc = {
 
 export const PRIVACY_POLICY: LegalDoc = {
   title: "Privacy Policy",
-  updated: "September 28, 2026",
+  updated: "November 21, 2026",
   intro:
     "Man Up is the discipleship app of the Man Up Men's Ministry at Love First Christian Center. This policy explains what the app collects, who can see it, and how to delete it.",
   sections: [
@@ -81,10 +81,11 @@ export const PRIVACY_POLICY: LegalDoc = {
     {
       heading: "Who can see what",
       paragraphs: [
-        "Group chat, group prayer requests, and weekly check-ins: only the men currently in your group, including your leader.",
+        "Group chat, group prayer requests, and weekly check-ins: the men currently in your group, including your leader, and the ministry's overseers.",
+        "Overseers are the one or two pastors over the whole ministry. They can read every group's chat, group prayer requests and responses, weekly check-ins with notes, and the contact log your leader keeps (the date and how, never what was said). They read only; they do not post in your group. The app names them under Settings, What your leader sees.",
         "Ministry chat and prayer requests you share with the whole ministry: every man in the ministry.",
-        "Lesson reflections: only you.",
-        "Ministry admins can see a group message or prayer post only when someone reports it, and then only that one item.",
+        "Lesson reflections: only you. Overseers do not see them, and an anonymous prayer request stays anonymous to them too.",
+        "Other ministry admins can see a group message or prayer post only when someone reports it, and then only that one item.",
         "The app shows the full details under Settings, What your leader sees.",
       ],
     },

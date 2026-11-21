@@ -132,7 +132,11 @@ migration adds a table.
 1. STANDALONE: no Man Up data leaves this Supabase project. No export paths of any kind.
 2. PRIVACY: prayer requests and interactions, group chat, lesson reflections, and contact
    log notes never appear in any dashboard, score, report, or aggregate. Scores use counts
-   of activity (e.g. "posted in group this week"), never content.
+   of activity (e.g. "posted in group this week"), never content. The one direct-read
+   exception is the ministry overseer (admin + ministry_members.is_overseer, 0020, Kevin
+   signed off 2026-11-21): read-only access to every group's chat, group prayer, check-ins,
+   and contact logs (never notes), through fn_oversees. Never reflections, never anonymous
+   authors, never writes. Do not widen it without Kevin's sign-off.
 3. PCO IS READ-ONLY: Man Up reads the configured Man Up PCO group (roster and Saturday
    gathering attendance) one-way, into pco_roster and pco_gathering_attendance. It never
    writes to Planning Center. Only GET requests to PCO exist in this codebase.
@@ -149,7 +153,7 @@ migration adds a table.
 ## Do not touch without Kevin's explicit sign-off in the conversation
 
 - Applied migration files (changes always go in a new migration)
-- RLS policies and the fn_ministry_role / fn_is_leader helpers
+- RLS policies and the fn_ministry_role / fn_is_leader / fn_oversees helpers
 - Anything that adds a network call to a system other than Supabase, PCO (GET), Sanity,
   Mux/Vimeo, Sentry, Expo push, Inngest, or SMTP (signed off 2026-10-13 for the admin
   site's public /support form only: emails what the visitor typed, stores nothing, and

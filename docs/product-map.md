@@ -80,11 +80,20 @@ Three roles, stored as a `role` field on the profile record, enforced with Supab
   - Groups at risk (declining attendance, quiet chat, inactive leader)
 - Manages: groups (create/close/merge), role assignments, course publishing, gathering entries, serve opportunity listings.
 
-### Privacy wall (applies to every role including admin)
+### Ministry Overseer (the 1 or 2 pastors over the whole ministry; added 2026-11-21)
+
+- A ministry admin with the overseer flag (ministry_members.is_overseer, migration 0020). Keeps every admin tool.
+- Granted by another admin on the admin website's People page; an admin cannot grant it to himself. Each grant is stamped with who and when. Losing the admin role clears it.
+- Reads, in every group of his ministry, from the mobile app (Ministry admin > a group > Read this group): the leader view (tiers, needs a call, contact coverage, pulse, attendance), group chat, group-only prayer requests and responses, and weekly check-ins with notes.
+- Read only: never posts, prays, responds, or checks in inside a group he is not in.
+- Never sees: lesson reflections, the author of an anonymous prayer request, or contact log notes.
+- Members are told: the privacy policy and Settings, What your leader sees, name the overseers and what they can read.
+
+### Privacy wall (applies to every role including admin; overseers are the stated exception)
 
 - **Prayer request content never rolls up into any dashboard.** Engagement signals only (attendance, activity), never spiritual content. The author chooses who sees each prayer request: his group (the default) or the whole ministry. It never goes beyond his ministry.
 - Chat content (group and ministry chat) is not surfaced in dashboards, only activity level (e.g., "active this week: yes/no").
-- **The single exception is the report path:** when a group member reports a prayer post or message, that specific item becomes visible to admins for moderation review via content_reports, and that access is inherently logged. Admins never gain browse access to any prayer wall or group chat; they see reported items only. (The ministry chat is different by design: every man in the ministry, admins included, is in it.)
+- **The single exception is the report path:** when a group member reports a prayer post or message, that specific item becomes visible to admins for moderation review via content_reports, and that access is inherently logged. Admins never gain browse access to any prayer wall or group chat; they see reported items only. The one exception is the ministry overseer role above, which reads groups directly and is disclosed to every member. (The ministry chat is different by design: every man in the ministry, admins included, is in it.)
 - **Safety design:** the wall is never unwatched, because the group leader is a member and sees everything, and carries the crisis protocol. Oversight flows through the shepherd in the room, not through database access. Visibility also creates responsibility: admins not having browse access is deliberate liability hygiene, not an oversight gap.
 - This policy is ratified by ministry leadership via the presentation document (which states it plainly) and stated out loud in the approval conversation, so no one discovers it mid-conflict.
 
@@ -358,7 +367,7 @@ user_blocks
 ### RLS strategy (summary)
 
 - `profiles`: user reads own row; leaders read rows of members in their groups; ministry admins read profiles of their ministry's members only. All policies resolve role via `ministry_members`, and every policy filters on `ministry_id`, written once as a shared helper function and reused across tables.
-- Group-scoped tables (`messages`, `checkins`, `attendance` via meeting to group): readable/writable only by members of that group. `prayer_requests` follow the author's `visibility` (group or ministry); responses follow the request. Admins **do not** get browse access to `messages` or group-only `prayer_requests` by policy (a ministry-wide request is visible to everyone in the ministry, admins included, because the author chose that). Enforce the privacy wall in the database, not just the UI.
+- Group-scoped tables (`messages`, `checkins`, `attendance` via meeting to group): readable/writable only by members of that group. `prayer_requests` follow the author's `visibility` (group or ministry); responses follow the request. Admins **do not** get browse access to `messages` or group-only `prayer_requests` by policy, except overseers (fn_oversees, 0020), who read them along with check-ins (a ministry-wide request is visible to everyone in the ministry, admins included, because the author chose that). Enforce the privacy wall in the database, not just the UI.
 - **Report exception policy:** admins can read a `prayer_requests` or `messages` row only when an open `content_reports` row targets it (policy joins through content_reports). Access is scoped to the reported item, never the surrounding wall or thread, and the report record itself is the audit log.
 - `attendance`, `gathering_intents`, `lead_progress`: member reads own; leader reads his group's; admin reads all.
 - Content tables (`gatherings`, `courses`, `lessons`, `serve_opportunities`, `lead_milestones`): readable by any authenticated user, admin-writable.

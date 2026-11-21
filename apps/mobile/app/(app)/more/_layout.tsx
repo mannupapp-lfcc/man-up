@@ -8,6 +8,7 @@ export const unstable_settings = { anchor: "index" };
 export default function MoreLayout() {
   const { state } = useAuth();
   const isAdmin = state.status === "ready" && state.membership.role === "admin";
+  const isOverseer = isAdmin && state.status === "ready" && state.membership.isOverseer;
 
   return (
     <Stack screenOptions={stackScreenOptions}>
@@ -30,6 +31,15 @@ export default function MoreLayout() {
         <Stack.Screen name="admin/index" options={{ title: "Ministry admin" }} />
         <Stack.Screen name="admin/new-group" options={{ title: "New group" }} />
         <Stack.Screen name="admin/[groupId]" options={{ title: "Group" }} />
+      </Stack.Protected>
+
+      {/* Overseers only (0020): read any group, read only. The database enforces the
+          same rule (fn_oversees); this keeps the screens out of reach. */}
+      <Stack.Protected guard={isOverseer}>
+        <Stack.Screen name="admin/oversee/[groupId]/dashboard" options={{ title: "Leader view" }} />
+        <Stack.Screen name="admin/oversee/[groupId]/chat" options={{ title: "Group chat" }} />
+        <Stack.Screen name="admin/oversee/[groupId]/prayer" options={{ title: "Group prayer" }} />
+        <Stack.Screen name="admin/oversee/[groupId]/checkins" options={{ title: "Check-ins" }} />
       </Stack.Protected>
     </Stack>
   );

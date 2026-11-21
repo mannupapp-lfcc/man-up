@@ -8,6 +8,8 @@ export type Membership = {
   ministryId: string;
   ministryName: string;
   role: DbEnum<"ministry_role">;
+  // An admin who reads every group (0020). The database enforces it (fn_oversees).
+  isOverseer: boolean;
 };
 
 export type AuthState =
@@ -59,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [membership, profile] = await Promise.all([
       supabase
         .from("ministry_members")
-        .select("role, ministry_id, ministries(name)")
+        .select("role, is_overseer, ministry_id, ministries(name)")
         .eq("profile_id", session.user.id)
         .is("left_at", null)
         .order("joined_at")
@@ -83,6 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ministryId: membership.data.ministry_id,
         ministryName: membership.data.ministries.name,
         role: membership.data.role,
+        isOverseer: membership.data.role === "admin" && membership.data.is_overseer,
       },
     });
   }, []);

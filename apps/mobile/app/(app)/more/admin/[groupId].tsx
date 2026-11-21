@@ -2,7 +2,7 @@ import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useState } from "react";
 import { Alert, StyleSheet, Text, View } from "react-native";
 import type { DbEnum } from "@manup/shared";
-import { Body, Card, Chip, Field, Loading, Screen, Title, useColors } from "@/components/ui";
+import { ActionRow, Body, Card, Chip, Field, Loading, Screen, Title, useColors } from "@/components/ui";
 import { GroupForm, type GroupValues } from "@/components/GroupForm";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
@@ -18,6 +18,7 @@ export default function AdminGroup() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
   const { state } = useAuth();
   const ministryId = state.status === "ready" ? state.membership.ministryId : null;
+  const isOverseer = state.status === "ready" && state.membership.isOverseer;
   const [data, setData] = useState<{ group: GroupValues & { id: string }; roster: Man[]; others: Man[] } | null | "missing">(null);
   const [search, setSearch] = useState("");
   const [busy, setBusy] = useState(false);
@@ -94,6 +95,20 @@ export default function AdminGroup() {
   return (
     <Screen>
       <Title>{group.name}</Title>
+
+      {isOverseer ? (
+        <Card title="Read this group (overseer)">
+          <Body muted>Read only. The men in the group see who the overseers are under Settings.</Body>
+          <ActionRow title="Leader view" subtitle="Tiers, who needs a call, contact coverage, attendance." icon="speedometer-outline"
+            href={{ pathname: "/more/admin/oversee/[groupId]/dashboard", params: { groupId: group.id } }} />
+          <ActionRow title="Group chat" subtitle="The group's messages." icon="chatbubbles-outline"
+            href={{ pathname: "/more/admin/oversee/[groupId]/chat", params: { groupId: group.id } }} />
+          <ActionRow title="Group prayer" subtitle="Requests shared with this group. Anonymous stays anonymous." icon="heart-outline"
+            href={{ pathname: "/more/admin/oversee/[groupId]/prayer", params: { groupId: group.id } }} />
+          <ActionRow title="Check-ins" subtitle="Each man's weekly answer and note." icon="pulse-outline"
+            href={{ pathname: "/more/admin/oversee/[groupId]/checkins", params: { groupId: group.id } }} />
+        </Card>
+      ) : null}
 
       <Card title={`Men in this group (${roster.length})`}>
         {roster.length === 0 ? <Body muted>No one yet. Add men below.</Body> : null}

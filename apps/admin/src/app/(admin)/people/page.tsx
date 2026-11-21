@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Flash, PageTitle, ROLE_LABEL, Submit, daysAgo, inputClass } from "@/components/ui";
 import { requireAdmin } from "@/lib/admin";
 import { placeMember } from "../groups/actions";
-import { changeRole } from "./actions";
+import { changeRole, setOverseer } from "./actions";
 
 export default async function PeoplePage({ searchParams }: PageProps<"/people">) {
   const { error, show, q } = await searchParams;
@@ -14,7 +14,7 @@ export default async function PeoplePage({ searchParams }: PageProps<"/people">)
   const [{ data: people }, { data: placements }, { data: groups }] = await Promise.all([
     supabase
       .from("ministry_members")
-      .select("profile_id, role, joined_at, profiles(full_name, email, phone, pco_person_id)")
+      .select("profile_id, role, is_overseer, joined_at, profiles(full_name, email, phone, pco_person_id)")
       .eq("ministry_id", ministryId)
       .is("left_at", null),
     supabase
@@ -94,6 +94,19 @@ export default async function PeoplePage({ searchParams }: PageProps<"/people">)
                       <Submit variant="secondary">Save</Submit>
                     </form>
                   )}
+                  {p.role === "admin" ? (
+                    <form action={setOverseer} className="mt-2 flex items-center gap-2">
+                      <input type="hidden" name="profile_id" value={p.profile_id} />
+                      <input type="hidden" name="back" value={back} />
+                      <input type="hidden" name="on" value={p.is_overseer ? "false" : "true"} />
+                      <span className={p.is_overseer ? "text-xs font-semibold text-gold" : "text-xs text-neutral-500"}>
+                        {p.is_overseer ? "Overseer: reads every group" : "Not an overseer"}
+                      </span>
+                      {p.profile_id === userId && !p.is_overseer ? null : (
+                        <Submit variant="secondary">{p.is_overseer ? "Remove" : "Make overseer"}</Submit>
+                      )}
+                    </form>
+                  ) : null}
                 </td>
               </tr>
             ))}

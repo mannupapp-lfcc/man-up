@@ -973,27 +973,36 @@ export type Database = {
       ministry_members: {
         Row: {
           id: string
+          is_overseer: boolean
           joined_at: string
           left_at: string | null
           ministry_id: string
+          overseer_granted_at: string | null
+          overseer_granted_by: string | null
           profile_id: string
           role: Database["public"]["Enums"]["ministry_role"]
           role_since: string
         }
         Insert: {
           id?: string
+          is_overseer?: boolean
           joined_at?: string
           left_at?: string | null
           ministry_id: string
+          overseer_granted_at?: string | null
+          overseer_granted_by?: string | null
           profile_id: string
           role?: Database["public"]["Enums"]["ministry_role"]
           role_since?: string
         }
         Update: {
           id?: string
+          is_overseer?: boolean
           joined_at?: string
           left_at?: string | null
           ministry_id?: string
+          overseer_granted_at?: string | null
+          overseer_granted_by?: string | null
           profile_id?: string
           role?: Database["public"]["Enums"]["ministry_role"]
           role_since?: string
@@ -2103,9 +2112,38 @@ export type Database = {
         Returns: boolean
       }
       fn_open_signup: { Args: { p_ministry: string }; Returns: boolean }
+      fn_oversees: { Args: { p_ministry: string }; Returns: boolean }
       generate_meetings: {
         Args: { p_ministry: string; p_weeks?: number }
         Returns: number
+      }
+      group_contact_logs: {
+        Args: { p_group: string }
+        Returns: {
+          contacted_at: string
+          leader_id: string
+          method: Database["public"]["Enums"]["contact_method"]
+          profile_id: string
+        }[]
+      }
+      group_prayer_wall: {
+        Args: { p_group: string }
+        Returns: {
+          answered_note: string
+          author_id: string
+          author_name: string
+          body: string
+          comment_count: number
+          created_at: string
+          group_id: string
+          i_prayed: boolean
+          id: string
+          is_anonymous: boolean
+          is_mine: boolean
+          prayed_count: number
+          status: Database["public"]["Enums"]["prayer_status"]
+          visibility: Database["public"]["Enums"]["prayer_visibility"]
+        }[]
       }
       group_tiers: {
         Args: { p_group: string }
@@ -2134,6 +2172,13 @@ export type Database = {
       mark_attendance: {
         Args: { p_excused?: string[]; p_meeting: string; p_present: string[] }
         Returns: undefined
+      }
+      ministry_overseers: {
+        Args: { p_ministry: string }
+        Returns: {
+          full_name: string
+          profile_id: string
+        }[]
       }
       ministry_people: {
         Args: { p_ministry: string }

@@ -33,3 +33,26 @@ export async function changeRole(formData: FormData) {
   revalidatePath("/", "layout");
   redirect(back);
 }
+
+// Overseer (0020): an admin who reads every group's chat, prayer, and check-ins.
+// The database refuses a self-grant and stamps who granted it.
+export async function setOverseer(formData: FormData) {
+  const { supabase, ministryId, userId } = await requireAdmin();
+  const profileId = String(formData.get("profile_id"));
+  const on = formData.get("on") === "true";
+  const back = String(formData.get("back") ?? "/people");
+  if (on && profileId === userId) fail(back, "Another admin must make you an overseer.");
+
+  const { data, error } = await supabase
+    .from("ministry_members")
+    .update({ is_overseer: on })
+    .eq("ministry_id", ministryId)
+    .eq("profile_id", profileId)
+    .eq("role", "admin")
+    .is("left_at", null)
+    .select("profile_id");
+  if (error) fail(back, error.message);
+  if (on && !data?.length) fail(back, "Only an admin can be an overseer. Make him an admin first.");
+  revalidatePath("/", "layout");
+  redirect(back);
+}
