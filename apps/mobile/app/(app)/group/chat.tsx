@@ -157,6 +157,8 @@ export default function Chat() {
         <MessageMenu
           visible={!!menuFor}
           mine={menuFor?.profile_id === me}
+          author={menuFor ? names.get(menuFor.profile_id) : undefined}
+          preview={menuFor?.body}
           myKinds={new Set((menuFor ? byMessage.get(menuFor.id) ?? [] : []).filter((r) => r.profile_id === me).map((r) => r.reaction))}
           onReact={(kind) => menuFor && void react(menuFor, kind)}
           onDelete={() => menuFor && deleteOwn(menuFor)}

@@ -148,6 +148,8 @@ export default function MinistryChat() {
         <MessageMenu
           visible={!!menuFor}
           mine={menuFor?.profile_id === me}
+          author={menuFor ? people.get(menuFor.profile_id)?.name : undefined}
+          preview={menuFor?.body}
           myKinds={new Set((menuFor ? byMessage.get(menuFor.id) ?? [] : []).filter((r) => r.profile_id === me).map((r) => r.reaction))}
           onReact={(kind) => menuFor && void react(menuFor, kind)}
           onDelete={() => menuFor && openOwnMessageMenu(() => void remove(menuFor.id))}
