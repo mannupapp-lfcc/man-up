@@ -47,7 +47,8 @@
           "defaultChannel": "default"
         }
       ],
-      "@sentry/react-native"
+      "@sentry/react-native",
+      "./plugins/withOptionalPortrait"
     ],
     "experiments": {
       "typedRoutes": true
