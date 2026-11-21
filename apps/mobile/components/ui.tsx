@@ -3,6 +3,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, useSegments, type Href } from "expo-router";
 import {
   ActivityIndicator,
+  Modal,
   Pressable,
   StyleSheet,
   Text,
@@ -122,6 +123,44 @@ export function Button({
   );
 }
 
+// Bottom sheet for picking one of a few choices. Use it instead of Alert.alert
+// when there are more than two options: Android Alert shows three buttons at most
+// (it drops Cancel) and can't be dismissed by tapping outside it. This sheet closes on
+// a backdrop tap, the Android back button, or Cancel.
+export type SheetChoice = { label: string; hint?: string; onPress: () => void };
+export function ChoiceSheet({ visible, title, message, choices, onClose }: {
+  visible: boolean;
+  title: string;
+  message?: string;
+  choices: SheetChoice[];
+  onClose: () => void;
+}) {
+  const c = useColors();
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent navigationBarTranslucent>
+      <Pressable style={styles.sheetBackdrop} onPress={onClose} accessibilityLabel="Close" />
+      <SafeAreaView edges={["bottom"]} style={[styles.sheet, { backgroundColor: c.field, borderColor: c.border }]}>
+        <Text style={[styles.cardTitle, { color: c.text }]}>{title}</Text>
+        {message ? <Text style={[styles.hint, { marginTop: -4 }]}>{message}</Text> : null}
+        <View style={{ gap: 8 }}>
+          {choices.map((choice) => (
+            <Pressable
+              key={choice.label}
+              accessibilityRole="button"
+              onPress={() => { onClose(); choice.onPress(); }}
+              style={({ pressed }) => [styles.sheetChoice, { borderColor: c.accent }, pressed && { backgroundColor: c.navy }]}
+            >
+              <Text style={{ color: c.accent, fontSize: 16, fontWeight: "700" }}>{choice.label}</Text>
+              {choice.hint ? <Text style={styles.hint}>{choice.hint}</Text> : null}
+            </Pressable>
+          ))}
+        </View>
+        <Button title="Cancel" variant="secondary" onPress={onClose} />
+      </SafeAreaView>
+    </Modal>
+  );
+}
+
 // Small outlined button for row actions. Filled gold when selected.
 export function Chip({ label, onPress, selected }: { label: string; onPress: () => void; selected?: boolean }) {
   const c = useColors();
@@ -186,6 +225,9 @@ const styles = StyleSheet.create({
   button: { borderRadius: 14, paddingVertical: 16, paddingHorizontal: 16, alignItems: "center", minHeight: 54, justifyContent: "center" },
   buttonText: { fontSize: 15, fontWeight: "700", textAlign: "center" },
   card: { borderWidth: 1, borderRadius: 22, padding: 20, gap: 12, borderTopWidth: 2, shadowColor: colors.navy, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.22, shadowRadius: 16, elevation: 4 },
+  sheetBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)" },
+  sheet: { borderTopLeftRadius: 22, borderTopRightRadius: 22, borderWidth: 1, borderBottomWidth: 0, padding: 20, gap: 14 },
+  sheetChoice: { borderWidth: 1, borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14, minHeight: 54, justifyContent: "center", gap: 2 },
   chip: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, minHeight: 40, justifyContent: "center" },
   cardTitle: { fontSize: 17, lineHeight: 23, fontWeight: "700", color: colors.text },
   actionRow: { flexDirection: "row", alignItems: "center", gap: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 20, padding: 18, minHeight: 88 },

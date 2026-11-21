@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Body, Card, Loading, Screen, useColors } from "@/components/ui";
 import { pulseByWeek, useGroupCheckins } from "@/lib/checkins";
+import { flaggedSince } from "@/lib/contact";
 import { formatMeeting } from "@/lib/group";
 import { useOverseenGroup } from "@/lib/oversee";
 import { timeAgo } from "@/lib/pray";
@@ -27,6 +28,12 @@ export default function OverseeDashboard() {
     const t = tiers.get(m.profileId);
     return t && !t.isNew && !t.paused && (t.tier === "Disconnected" || t.velocity);
   });
+  const reachedSince = (profileId: string) => {
+    const last = group.lastContact.get(profileId);
+    const t = tiers.get(profileId);
+    return last && t && last > flaggedSince(t.asOf) ? last : null;
+  };
+  const toReach = needsCall.filter((m) => !reachedSince(m.profileId)).length;
   const uncovered = men.filter((m) => (group.lastContact.get(m.profileId)?.getTime() ?? 0) < monthAgo);
   const recent = group.past.filter((m) => m.markedAt).reverse();
   const leaders = group.roster.filter((m) => m.leads).map((m) => m.fullName);
@@ -35,7 +42,7 @@ export default function OverseeDashboard() {
     <Screen>
       <Body muted>{leaders.length ? `Led by ${leaders.join(" and ")}.` : "No leader yet."} You see what the leader sees. Nothing here can be changed.</Body>
 
-      <Card title={needsCall.length ? `Needs a call (${needsCall.length})` : "Needs a call"}>
+      <Card title={needsCall.length ? `Needs a call (${toReach ? `${toReach} to reach` : "all reached"})` : "Needs a call"}>
         {needsCall.length === 0 ? <Body muted>No one right now.</Body> : null}
         {needsCall.map((m) => {
           const t = tiers.get(m.profileId)!;
@@ -43,6 +50,9 @@ export default function OverseeDashboard() {
             <View key={m.profileId} style={styles.row}>
               <Text style={{ color: c.text, fontSize: 16, fontWeight: "700" }}>{m.fullName}</Text>
               <Text style={{ color: TIER_COLOR[t.tier], fontSize: 13 }}>{t.velocity ? "Trending down 3 weeks" : TIER_HINT[t.tier]}</Text>
+              <Text style={{ color: reachedSince(m.profileId) ? TIER_COLOR.Thriving : c.accent, fontSize: 13, fontWeight: "600" }}>
+                {reachedSince(m.profileId) ? `Contacted ${timeAgo(reachedSince(m.profileId)!)}` : "Not contacted yet"}
+              </Text>
             </View>
           );
         })}

@@ -1,3 +1,4 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -5,6 +6,7 @@ import { Body, Button, Card, ErrorText, Field, Loading, Screen, Title, useColors
 import { useAuth } from "@/lib/auth";
 import { SCALE_LABEL, thisWeekOf, useGroupCheckins } from "@/lib/checkins";
 import { useGroup } from "@/lib/group";
+import { TIER_COLOR } from "@/lib/scores";
 import { supabase } from "@/lib/supabase";
 
 // Weekly check-in: how he is really doing, 1 to 5, plus an optional note. His group
@@ -50,15 +52,20 @@ export default function WeeklyCheckin() {
   );
 }
 
+// Once he has answered this week, he sees his saved answer (read only) with an Edit
+// button. Editing opens the form; Cancel puts back what was saved.
 function CheckinForm({ ministryId, initialScale, initialNote, savedFromPush, isUpdate, onSaved }: {
   ministryId: string; initialScale: number | null; initialNote: string; savedFromPush: boolean; isUpdate: boolean; onSaved: () => void;
 }) {
   const c = useColors();
+  const [saved, setSaved] = useState<{ scale: number; note: string } | null>(
+    (isUpdate || savedFromPush) && initialScale ? { scale: initialScale, note: initialNote } : null,
+  );
+  const [editing, setEditing] = useState(!saved);
   const [scale, setScale] = useState<number | null>(initialScale);
   const [note, setNote] = useState(initialNote);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState(savedFromPush);
 
   const save = async () => {
     if (!scale) return setError("Pick a number first.");
@@ -67,9 +74,43 @@ function CheckinForm({ ministryId, initialScale, initialNote, savedFromPush, isU
     const { error: e } = await supabase.rpc("submit_checkin", { p_ministry: ministryId, p_scale: scale, p_note: note.trim() || undefined });
     setBusy(false);
     if (e) return setError(e.message);
-    setDone(true);
+    setSaved({ scale, note: note.trim() });
+    setNote(note.trim());
+    setEditing(false);
     onSaved();
   };
+
+  const cancel = () => {
+    if (!saved) return;
+    setScale(saved.scale);
+    setNote(saved.note);
+    setError(null);
+    setEditing(false);
+  };
+
+  if (saved && !editing) {
+    return (
+      <Card>
+        <View style={styles.savedHead}>
+          <Ionicons name="checkmark-circle" size={22} color={TIER_COLOR.Thriving} />
+          <Text style={{ color: TIER_COLOR.Thriving, fontSize: 15, fontWeight: "700" }}>Checked in this week</Text>
+        </View>
+        <View style={styles.savedAnswer}>
+          <View style={[styles.savedBadge, { backgroundColor: c.accent }]}>
+            <Text style={{ color: c.onAccent, fontSize: 26, fontWeight: "800" }}>{saved.scale}</Text>
+          </View>
+          <Text style={{ color: c.text, fontSize: 20, fontWeight: "700" }}>{SCALE_LABEL[saved.scale]}</Text>
+        </View>
+        {saved.note ? (
+          <Text style={{ color: c.text, fontSize: 16, lineHeight: 24 }}>{saved.note}</Text>
+        ) : (
+          <Body muted>No note this week.</Body>
+        )}
+        <Body muted>Your group sees this. Thanks for being honest.</Body>
+        <Button title="Edit my check-in" variant="secondary" onPress={() => setEditing(true)} />
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -78,7 +119,7 @@ function CheckinForm({ ministryId, initialScale, initialNote, savedFromPush, isU
           const selected = scale === n;
           return (
             <Pressable key={n} accessibilityRole="button" accessibilityLabel={`${n}, ${SCALE_LABEL[n]}`} accessibilityState={{ selected }}
-              onPress={() => { setScale(n); setDone(false); }}
+              onPress={() => setScale(n)}
               style={[styles.option, { borderColor: selected ? c.accent : c.border, backgroundColor: selected ? c.accent : c.bg }]}>
               <Text style={{ color: selected ? c.onAccent : c.text, fontSize: 22, fontWeight: "800" }}>{n}</Text>
               <Text style={{ color: selected ? c.onAccent : c.muted, fontSize: 11 }}>{SCALE_LABEL[n]}</Text>
@@ -86,11 +127,11 @@ function CheckinForm({ ministryId, initialScale, initialNote, savedFromPush, isU
           );
         })}
       </View>
-      <Field label="Anything you want your brothers to know? (optional)" value={note} onChangeText={(t) => { setNote(t); setDone(false); }}
+      <Field label="Anything you want your brothers to know? (optional)" value={note} onChangeText={setNote}
         multiline maxLength={500} style={{ minHeight: 90, textAlignVertical: "top" }} />
       <ErrorText>{error}</ErrorText>
-      {done && scale ? <Body>Saved: {scale}, {SCALE_LABEL[scale]?.toLowerCase()}. Thanks for being honest.</Body> : null}
-      <Button title={isUpdate ? "Update my check-in" : "Check in"} onPress={() => void save()} busy={busy} />
+      <Button title={saved ? "Save changes" : "Check in"} onPress={() => void save()} busy={busy} />
+      {saved ? <Button title="Cancel" variant="secondary" onPress={cancel} /> : null}
     </Card>
   );
 }
@@ -98,5 +139,8 @@ function CheckinForm({ ministryId, initialScale, initialNote, savedFromPush, isU
 const styles = StyleSheet.create({
   scale: { flexDirection: "row", gap: 8 },
   option: { flex: 1, borderWidth: 1, borderRadius: 14, paddingVertical: 12, alignItems: "center", gap: 2 },
+  savedHead: { flexDirection: "row", alignItems: "center", gap: 8 },
+  savedAnswer: { flexDirection: "row", alignItems: "center", gap: 14 },
+  savedBadge: { width: 52, height: 52, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   row: { gap: 4, paddingVertical: 10, borderTopWidth: StyleSheet.hairlineWidth },
 });

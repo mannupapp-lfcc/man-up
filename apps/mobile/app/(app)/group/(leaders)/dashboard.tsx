@@ -1,15 +1,19 @@
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { Alert, Linking, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Body, Card, Chip, Loading, Screen, useColors } from "@/components/ui";
+import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Body, Card, Chip, ChoiceSheet, Loading, Screen, useColors } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { pulseByWeek, useGroupCheckins } from "@/lib/checkins";
+import { flaggedSince, useContactLogger } from "@/lib/contact";
 import { formatMeeting, useGroup } from "@/lib/group";
 import { timeAgo } from "@/lib/pray";
 import { TIER_COLOR, TIER_HINT, TREND_WORD, useGroupTiers } from "@/lib/scores";
 import { supabase } from "@/lib/supabase";
 
 type Flag = { id: string; profile_id: string; ends_on: string };
+
+// YYYY-MM-DD, n days out (season_flags.ends_on).
+const daysFromToday = (n: number) => new Date(Date.now() + n * 86_400_000).toISOString().slice(0, 10);
 
 // Leader dashboard (product map section 4): his group only, tiers not numbers.
 export default function LeaderDashboard() {
@@ -21,6 +25,8 @@ export default function LeaderDashboard() {
   const { rows: checkins } = useGroupCheckins(group?.groupId ?? null, 8);
   const [lastContact, setLastContact] = useState<Map<string, Date>>(new Map());
   const [flags, setFlags] = useState<Flag[]>([]);
+  const [seasonFor, setSeasonFor] = useState<{ profileId: string; name: string } | null>(null);
+  const [monthAgo] = useState(() => Date.now() - 30 * 86_400_000);
   const me = auth.status === "ready" ? auth.session.user.id : null;
   const ministryId = auth.status === "ready" ? auth.membership.ministryId : null;
 
@@ -37,33 +43,35 @@ export default function LeaderDashboard() {
     setFlags(seasons.data ?? []);
   }, [group]);
   useFocusEffect(useCallback(() => void load(), [load]));
+  const { reach, logVisit } = useContactLogger({ me, ministryId, onLogged: load });
 
   if (!group || tiers === null || !me || !ministryId) return <Loading />;
 
   const men = group.roster.filter((m) => m.profileId !== me);
   const flagOf = new Map(flags.map((f) => [f.profile_id, f]));
-  const needsCall = men.filter((m) => {
-    const t = tiers.get(m.profileId);
-    return t && !t.isNew && !t.paused && (t.tier === "Disconnected" || t.velocity);
-  });
-  const monthAgo = Date.now() - 30 * 86_400_000;
+  // Contacted = a contact logged (by any leader of the group) since this week's flag.
+  const reachedSince = (profileId: string) => {
+    const last = lastContact.get(profileId);
+    const t = tiers.get(profileId);
+    return last && t && last > flaggedSince(t.asOf) ? last : null;
+  };
+  const needsCall = men
+    .filter((m) => {
+      const t = tiers.get(m.profileId);
+      return t && !t.isNew && !t.paused && (t.tier === "Disconnected" || t.velocity);
+    })
+    .sort((a, b) => Number(!!reachedSince(a.profileId)) - Number(!!reachedSince(b.profileId)));
+  const toReach = needsCall.filter((m) => !reachedSince(m.profileId)).length;
   const uncovered = men.filter((m) => (lastContact.get(m.profileId)?.getTime() ?? 0) < monthAgo);
   const recent = group.past.filter((m) => m.markedAt).slice(0, 8).reverse();
 
-  const setSeason = (profileId: string, name: string) =>
-    Alert.alert(`Season of life for ${name.split(" ")[0]}?`, "Pauses his alerts while he walks through something hard. He stays on your roster.", [
-      ...[14, 30, 60].map((days) => ({
-        text: `${days} days`,
-        onPress: async () => {
-          const ends = new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
-          const { error } = await supabase.from("season_flags").insert({ ministry_id: ministryId, profile_id: profileId, set_by: me, ends_on: ends });
-          if (error) Alert.alert("Not saved", error.message);
-          void load();
-          void reloadTiers();
-        },
-      })),
-      { text: "Cancel", style: "cancel" as const },
-    ]);
+  const startSeason = async (profileId: string, days: number) => {
+    const ends = daysFromToday(days);
+    const { error } = await supabase.from("season_flags").insert({ ministry_id: ministryId, profile_id: profileId, set_by: me, ends_on: ends });
+    if (error) Alert.alert("Not saved", error.message);
+    void load();
+    void reloadTiers();
+  };
 
   const endSeason = async (flag: Flag) => {
     await supabase.from("season_flags").delete().eq("id", flag.id);
@@ -72,21 +80,31 @@ export default function LeaderDashboard() {
 
   return (
     <Screen>
-      <Card title={needsCall.length ? `Needs a call (${needsCall.length})` : "Needs a call"}>
+      <Card title={needsCall.length ? `Needs a call (${toReach ? `${toReach} to reach` : "all reached"})` : "Needs a call"}>
         {needsCall.length === 0 ? <Body muted>No one right now.</Body> : null}
         {needsCall.map((m) => {
           const t = tiers.get(m.profileId)!;
+          const reached = reachedSince(m.profileId);
           return (
-            <View key={m.profileId} style={styles.row}>
-              <View style={styles.flex}>
-                <Text style={{ color: c.text, fontSize: 16, fontWeight: "700" }}>{m.fullName}</Text>
-                <Text style={{ color: TIER_COLOR[t.tier], fontSize: 13 }}>{t.velocity ? "Trending down 3 weeks" : TIER_HINT[t.tier]}</Text>
+            <View key={m.profileId} style={[styles.callRow, { borderBottomColor: c.border }]}>
+              <View style={styles.row}>
+                <View style={styles.flex}>
+                  <Text style={{ color: reached ? c.muted : c.text, fontSize: 16, fontWeight: "700" }}>{m.fullName}</Text>
+                  <Text style={{ color: TIER_COLOR[t.tier], fontSize: 13 }}>{t.velocity ? "Trending down 3 weeks" : TIER_HINT[t.tier]}</Text>
+                  <Text style={{ color: reached ? TIER_COLOR.Thriving : c.accent, fontSize: 13, fontWeight: "600" }}>
+                    {reached ? `Contacted ${timeAgo(reached)}` : "Not contacted yet"}
+                  </Text>
+                </View>
               </View>
-              {m.phone ? <Chip label="Call" onPress={() => void Linking.openURL(`tel:${m.phone}`)} /> : null}
+              <View style={styles.actions}>
+                {m.phone ? <Chip label="Call" onPress={() => reach(m, "call")} /> : null}
+                {m.phone ? <Chip label="Text" onPress={() => reach(m, "text")} /> : null}
+                <Chip label="Saw him" onPress={() => logVisit(m)} />
+              </View>
             </View>
           );
         })}
-        {needsCall.length ? <Body muted>Log the call from the Roster tab when you are done.</Body> : null}
+        {needsCall.length ? <Body muted>He stays on this list until his next Sunday score improves. Contacted means you or a co-leader logged a call, text, or visit since he was flagged.</Body> : null}
       </Card>
 
       <Card title="My men">
@@ -104,7 +122,7 @@ export default function LeaderDashboard() {
                   {flag ? `  Season until ${new Date(`${flag.ends_on}T12:00:00`).toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : ""}
                 </Text>
               </View>
-              {flag ? <Chip label="End season" onPress={() => void endSeason(flag)} /> : <Chip label="Season" onPress={() => setSeason(m.profileId, m.fullName)} />}
+              {flag ? <Chip label="End season" onPress={() => void endSeason(flag)} /> : <Chip label="Season" onPress={() => setSeasonFor({ profileId: m.profileId, name: m.fullName })} />}
             </View>
           );
         })}
@@ -163,12 +181,24 @@ export default function LeaderDashboard() {
           </ScrollView>
         )}
       </Card>
+      <ChoiceSheet
+        visible={!!seasonFor}
+        title={seasonFor ? `Season of life for ${seasonFor.name.split(" ")[0]}?` : ""}
+        message="Pauses his alerts while he walks through something hard. He stays on your roster. You can end it early."
+        choices={[14, 30, 60].map((days) => ({
+          label: `${days} days`,
+          onPress: () => { if (seasonFor) void startSeason(seasonFor.profileId, days); },
+        }))}
+        onClose={() => setSeasonFor(null)}
+      />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 8 },
+  callRow: { paddingVertical: 6, borderBottomWidth: StyleSheet.hairlineWidth },
+  actions: { flexDirection: "row", gap: 8, flexWrap: "wrap", paddingBottom: 6 },
   flex: { flex: 1 },
   dot: { width: 12, height: 12, borderRadius: 6 },
   pulseRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 3 },

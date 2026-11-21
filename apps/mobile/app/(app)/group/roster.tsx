@@ -1,14 +1,12 @@
 import { useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, AppState, Linking, Pressable, StyleSheet, Text, View } from "react-native";
+import { useCallback, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Card, Screen, useColors } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
+import { useContactLogger } from "@/lib/contact";
 import { useGroup, type RosterMan } from "@/lib/group";
 import { timeAgo } from "@/lib/pray";
 import { supabase } from "@/lib/supabase";
-
-type Method = "call" | "text" | "in_person";
-const METHOD_LABEL: Record<Method, string> = { call: "call", text: "text", in_person: "visit" };
 
 // Leaders: tap to call or text, then log it in one tap when they come back. No notes
 // field: what was said stays between the two men (scoring plan). Members see names
@@ -21,8 +19,6 @@ export default function Roster() {
   const me = auth.status === "ready" ? auth.session.user.id : null;
   const ministryId = auth.status === "ready" ? auth.membership.ministryId : null;
   const [lastContact, setLastContact] = useState<Map<string, Date>>(new Map());
-  const pending = useRef<{ man: RosterMan; method: Method } | null>(null);
-
   const loadContacts = useCallback(async () => {
     if (!group?.iLead) return;
     // RLS returns only contacts with men in groups he leads.
@@ -38,39 +34,11 @@ export default function Roster() {
 
   useFocusEffect(useCallback(() => void loadContacts(), [loadContacts]));
 
-  const log = useCallback(
-    async (man: RosterMan, method: Method) => {
-      if (!me || !ministryId) return;
-      const { error } = await supabase
-        .from("contact_logs")
-        .insert({ ministry_id: ministryId, profile_id: man.profileId, leader_id: me, method });
-      if (error) Alert.alert("Not logged", error.message);
-      else void loadContacts();
-    },
-    [me, ministryId, loadContacts],
-  );
-
-  // After a call or text, returning to the app offers to log it.
-  useEffect(() => {
-    const sub = AppState.addEventListener("change", (next) => {
-      if (next !== "active" || !pending.current) return;
-      const { man, method } = pending.current;
-      pending.current = null;
-      Alert.alert(`Log your ${METHOD_LABEL[method]} with ${man.fullName.split(" ")[0]}?`, undefined, [
-        { text: "Not now", style: "cancel" },
-        { text: "Log it", onPress: () => void log(man, method) },
-      ]);
-    });
-    return () => sub.remove();
-  }, [log]);
+  const { reach: dial, logVisit } = useContactLogger({ me, ministryId, onLogged: loadContacts });
 
   if (!group) return null;
 
-  const reach = (man: RosterMan, method: "call" | "text") => {
-    if (!man.phone) return;
-    if (group.iLead && man.profileId !== me) pending.current = { man, method };
-    void Linking.openURL(`${method === "call" ? "tel" : "sms"}:${man.phone}`);
-  };
+  const reach = (man: RosterMan, method: "call" | "text") => dial(man, method, group.iLead && man.profileId !== me);
 
   return (
     <Screen>
@@ -98,12 +66,7 @@ export default function Roster() {
                   {group.iLead ? (
                     <Action
                       label="Saw him"
-                      onPress={() =>
-                        Alert.alert(`Log a visit with ${man.fullName.split(" ")[0]}?`, undefined, [
-                          { text: "Cancel", style: "cancel" },
-                          { text: "Log it", onPress: () => void log(man, "in_person") },
-                        ])
-                      }
+                      onPress={() => logVisit(man)}
                     />
                   ) : null}
                 </View>

@@ -4,7 +4,7 @@ import { colors } from "./theme";
 import { supabase } from "./supabase";
 
 export type Tier = "New" | "Thriving" | "Steady" | "Drifting" | "Disconnected";
-export type ManTier = { profileId: string; tier: Tier; trend: "up" | "flat" | "down" | null; velocity: boolean; isNew: boolean; paused: boolean };
+export type ManTier = { profileId: string; tier: Tier; trend: "up" | "flat" | "down" | null; velocity: boolean; isNew: boolean; paused: boolean; asOf: string };
 
 export const TIER_COLOR: Record<Tier, string> = {
   New: colors.muted,
@@ -33,7 +33,7 @@ export function useGroupTiers(groupId: string | null) {
     const { data } = await supabase.rpc("group_tiers", { p_group: groupId });
     setTiers(new Map((data ?? []).map((r) => [r.profile_id, {
       profileId: r.profile_id, tier: r.tier as Tier, trend: (r.trend as ManTier["trend"]) ?? null,
-      velocity: r.velocity_alert, isNew: r.is_new, paused: r.paused,
+      velocity: r.velocity_alert, isNew: r.is_new, paused: r.paused, asOf: r.as_of,
     }])));
   }, [groupId]);
   useFocusEffect(useCallback(() => void load(), [load]));
