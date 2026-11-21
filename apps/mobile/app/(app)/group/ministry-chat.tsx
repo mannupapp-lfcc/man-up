@@ -3,11 +3,13 @@ import { useState } from "react";
 import { Alert, FlatList, Keyboard, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Linkify } from "@/components/Linkify";
+import { MessageMenu, ReactionRow } from "@/components/Reactions";
 import { openOwnMessageMenu, openSafetyMenu } from "@/components/safety";
 import { Body, Button, Loading, Screen, useColors } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { useMinistryChat, type MinistryMessage, type Person } from "@/lib/ministryChat";
 import { timeAgo } from "@/lib/pray";
+import { useReactions, type ReactionKind } from "@/lib/reactions";
 
 // The "@name" he is typing at the end of the draft, if any.
 const TAG_QUERY = /(^|\s)@([^@\n]{0,30})$/;
@@ -24,6 +26,12 @@ export default function MinistryChat() {
   const [draft, setDraft] = useState("");
   const [tagged, setTagged] = useState<Map<string, string>>(new Map());
   const [sending, setSending] = useState(false);
+  const [menuFor, setMenuFor] = useState<MinistryMessage | null>(null);
+  const { byMessage, toggle, reload: reloadReactions } = useReactions(
+    { table: "ministry_message_reactions", column: "ministry_id", value: ministryId },
+    messages?.map((m) => m.id) ?? [],
+    me,
+  );
 
   if (error && messages === null)
     return (
@@ -64,12 +72,13 @@ export default function MinistryChat() {
     setTagged(new Map());
   }
 
-  function onLongPress(m: MinistryMessage) {
+  async function react(m: MinistryMessage, kind: ReactionKind) {
+    const err = await toggle(m.id, kind);
+    if (err) Alert.alert("Could not react", err);
+  }
+
+  function reportOrBlock(m: MinistryMessage) {
     if (!me || !ministryId) return;
-    if (m.profile_id === me) {
-      openOwnMessageMenu(() => void remove(m.id));
-      return;
-    }
     openSafetyMenu({
       ministryId,
       me,
@@ -77,7 +86,10 @@ export default function MinistryChat() {
       targetId: m.id,
       authorId: m.profile_id,
       authorName: people.get(m.profile_id)?.name,
-      onBlocked: reload,
+      onBlocked: () => {
+        void reload();
+        void reloadReactions();
+      },
     });
   }
 
@@ -102,10 +114,11 @@ export default function MinistryChat() {
             const author = people.get(m.profile_id);
             const forMe = m.mentions.includes(me);
             return (
+              <View style={[styles.item, mine && styles.mine]}>
               <Pressable
                 onPress={Keyboard.dismiss}
-                onLongPress={() => onLongPress(m)}
-                accessibilityHint="Long press for options"
+                onLongPress={() => setMenuFor(m)}
+                accessibilityHint="Long press to react or for options"
                 style={[
                   styles.bubble,
                   mine ? [styles.mine, { backgroundColor: c.navy }] : { backgroundColor: c.field, borderColor: c.border, borderWidth: 1 },
@@ -121,8 +134,25 @@ export default function MinistryChat() {
                 <MessageBody message={m} people={people} />
                 <Text style={{ color: c.muted, fontSize: 11, alignSelf: "flex-end" }}>{timeAgo(new Date(m.created_at))}</Text>
               </Pressable>
+              <ReactionRow
+                reactions={byMessage.get(m.id)}
+                me={me}
+                names={(id) => people.get(id)?.name}
+                onToggle={(kind) => void react(m, kind)}
+                alignEnd={mine}
+              />
+              </View>
             );
           }}
+        />
+        <MessageMenu
+          visible={!!menuFor}
+          mine={menuFor?.profile_id === me}
+          myKinds={new Set((menuFor ? byMessage.get(menuFor.id) ?? [] : []).filter((r) => r.profile_id === me).map((r) => r.reaction))}
+          onReact={(kind) => menuFor && void react(menuFor, kind)}
+          onDelete={() => menuFor && openOwnMessageMenu(() => void remove(menuFor.id))}
+          onReport={() => menuFor && reportOrBlock(menuFor)}
+          onClose={() => setMenuFor(null)}
         />
         {showEveryone || suggestions.length ? (
           <View style={[styles.suggestions, { borderTopColor: c.border, backgroundColor: c.field }]}>
@@ -199,7 +229,8 @@ function MessageBody({ message, people }: { message: MinistryMessage; people: Ma
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   list: { padding: 12, gap: 8 },
-  bubble: { maxWidth: "85%", borderRadius: 14, padding: 10, gap: 2, alignSelf: "flex-start" },
+  item: { maxWidth: "85%", gap: 4, alignSelf: "flex-start" },
+  bubble: { borderRadius: 14, padding: 10, gap: 2, alignSelf: "flex-start" },
   mine: { alignSelf: "flex-end" },
   author: { flexDirection: "row", alignItems: "center", gap: 6 },
   badge: { fontSize: 10, fontWeight: "800", paddingHorizontal: 6, paddingVertical: 1, borderRadius: 6, overflow: "hidden" },

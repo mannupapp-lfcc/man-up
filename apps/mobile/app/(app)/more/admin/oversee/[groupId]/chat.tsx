@@ -3,9 +3,12 @@ import { useEffect, useState } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Linkify } from "@/components/Linkify";
+import { ReactionRow } from "@/components/Reactions";
+import { useAuth } from "@/lib/auth";
 import { Loading, useColors } from "@/components/ui";
 import { useOverseenGroup } from "@/lib/oversee";
 import { timeAgo } from "@/lib/pray";
+import { useReactions } from "@/lib/reactions";
 import { supabase } from "@/lib/supabase";
 
 type Message = { id: string; profile_id: string; body: string; created_at: string };
@@ -17,6 +20,14 @@ export default function OverseeChat() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
   const { state } = useOverseenGroup(groupId);
   const [messages, setMessages] = useState<Message[] | null>(null);
+  const { state: auth } = useAuth();
+  const me = auth.status === "ready" ? auth.session.user.id : "";
+  // Read only: overseers see reactions but cannot add one (0021).
+  const { byMessage } = useReactions(
+    { table: "group_message_reactions", column: "group_id", value: groupId ?? null },
+    messages?.map((m) => m.id) ?? [],
+    me || null,
+  );
 
   useEffect(() => {
     let live = true;
@@ -55,10 +66,13 @@ export default function OverseeChat() {
         contentContainerStyle={styles.list}
         ListEmptyComponent={<Text style={{ color: c.muted, textAlign: "center" }}>No messages yet.</Text>}
         renderItem={({ item: m }) => (
+          <View style={styles.item}>
           <View style={[styles.bubble, { backgroundColor: c.field, borderColor: c.border }]}>
             <Text style={{ color: c.accent, fontWeight: "700", fontSize: 13 }}>{names.get(m.profile_id) ?? "Former member"}</Text>
             <Text style={{ color: c.text, fontSize: 16, lineHeight: 21 }}><Linkify text={m.body} /></Text>
             <Text style={{ color: c.muted, fontSize: 11, alignSelf: "flex-end" }}>{timeAgo(new Date(m.created_at))}</Text>
+          </View>
+          <ReactionRow reactions={byMessage.get(m.id)} me={me} names={(id) => names.get(id)} />
           </View>
         )}
       />
@@ -72,6 +86,7 @@ export default function OverseeChat() {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   list: { padding: 12, gap: 8 },
-  bubble: { maxWidth: "90%", borderRadius: 14, padding: 10, gap: 2, borderWidth: 1, alignSelf: "flex-start" },
+  item: { maxWidth: "90%", gap: 4, alignSelf: "flex-start" },
+  bubble: { borderRadius: 14, padding: 10, gap: 2, borderWidth: 1, alignSelf: "flex-start" },
   footer: { padding: 12, borderTopWidth: StyleSheet.hairlineWidth },
 });

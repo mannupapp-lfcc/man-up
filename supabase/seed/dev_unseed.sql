@@ -48,6 +48,13 @@ begin
     delete from content_reports
      where reporter_id in (select id from _seed_profiles) or reviewed_by in (select id from _seed_profiles);
   end if;
+  if to_regclass('public.group_message_reactions') is not null then
+    -- 0021: reactions by seed men, and any reaction in a seed group. Reactions on a
+    -- seed message also go with the message (on delete cascade).
+    delete from group_message_reactions
+     where group_id in (select id from _seed_groups) or profile_id in (select id from _seed_profiles);
+    delete from ministry_message_reactions where profile_id in (select id from _seed_profiles);
+  end if;
   if to_regclass('public.ministry_messages') is not null then
     -- Alerts for a seed message go with it (on delete cascade).
     delete from ministry_message_alerts where profile_id in (select id from _seed_profiles);

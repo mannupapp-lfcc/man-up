@@ -48,7 +48,16 @@
         }
       ],
       "@sentry/react-native",
-      "./plugins/withOptionalPortrait"
+      "./plugins/withOptionalPortrait",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

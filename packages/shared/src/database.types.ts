@@ -351,6 +351,61 @@ export type Database = {
           },
         ]
       }
+      group_message_reactions: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          message_id: string
+          ministry_id: string
+          profile_id: string
+          reaction: Database["public"]["Enums"]["message_reaction"]
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          message_id: string
+          ministry_id: string
+          profile_id: string
+          reaction: Database["public"]["Enums"]["message_reaction"]
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          message_id?: string
+          ministry_id?: string
+          profile_id?: string
+          reaction?: Database["public"]["Enums"]["message_reaction"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_message_reactions_group_id_fkey"
+            columns: ["group_id"]
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            referencedRelation: "group_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_message_reactions_ministry_id_fkey"
+            columns: ["ministry_id"]
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_message_reactions_profile_id_fkey"
+            columns: ["profile_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       group_messages: {
         Row: {
           body: string
@@ -1065,6 +1120,52 @@ export type Database = {
           },
           {
             foreignKeyName: "ministry_message_alerts_profile_id_fkey"
+            columns: ["profile_id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ministry_message_reactions: {
+        Row: {
+          created_at: string
+          id: string
+          message_id: string
+          ministry_id: string
+          profile_id: string
+          reaction: Database["public"]["Enums"]["message_reaction"]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message_id: string
+          ministry_id: string
+          profile_id: string
+          reaction: Database["public"]["Enums"]["message_reaction"]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message_id?: string
+          ministry_id?: string
+          profile_id?: string
+          reaction?: Database["public"]["Enums"]["message_reaction"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ministry_message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            referencedRelation: "ministry_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ministry_message_reactions_ministry_id_fkey"
+            columns: ["ministry_id"]
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ministry_message_reactions_profile_id_fkey"
             columns: ["profile_id"]
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -2306,6 +2407,7 @@ export type Database = {
       attendance_status: "present" | "absent" | "excused"
       contact_method: "call" | "text" | "in_person" | "other"
       group_status: "forming" | "active" | "archived"
+      message_reaction: "heart" | "thumbs_up" | "pray" | "amen" | "laugh"
       ministry_alert_kind: "leader_post" | "mention"
       ministry_role: "member" | "co_leader" | "leader" | "admin"
       prayer_status: "open" | "answered" | "archived"
@@ -2456,6 +2558,7 @@ export const Constants = {
       attendance_status: ["present", "absent", "excused"],
       contact_method: ["call", "text", "in_person", "other"],
       group_status: ["forming", "active", "archived"],
+      message_reaction: ["heart", "thumbs_up", "pray", "amen", "laugh"],
       ministry_alert_kind: ["leader_post", "mention"],
       ministry_role: ["member", "co_leader", "leader", "admin"],
       prayer_status: ["open", "answered", "archived"],

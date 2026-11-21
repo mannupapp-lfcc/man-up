@@ -224,6 +224,17 @@ begin
                      m, tests.u(t, 'member'), m);
     end if;
 
+    -- Reactions (0021): 'member2' hearts the group 1 message; 'member' thumbs up the
+    -- ministry message. Scope (ministry, group) is filled in by the trigger.
+    if to_regclass('public.group_message_reactions') is not null then
+      execute format($q$insert into group_message_reactions (message_id, profile_id, reaction)
+                        select id, %L, 'heart' from group_messages where ministry_id = %L and group_id = %L$q$,
+                     tests.u(t, 'member2'), m, g1);
+      execute format($q$insert into ministry_message_reactions (message_id, profile_id, reaction)
+                        select id, %L, 'thumbs_up' from ministry_messages where ministry_id = %L$q$,
+                     tests.u(t, 'member'), m);
+    end if;
+
     -- Check-ins and push (0014): 'member' checked in this week and turned group chat
     -- pushes off. push_outbox already has rows from the group chat trigger.
     if to_regclass('public.weekly_checkins') is not null then

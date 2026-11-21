@@ -3,11 +3,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, FlatList, Keyboard, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Linkify } from "@/components/Linkify";
+import { MessageMenu, ReactionRow } from "@/components/Reactions";
 import { openOwnMessageMenu, openSafetyMenu } from "@/components/safety";
 import { Loading, useColors } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { useGroup } from "@/lib/group";
 import { timeAgo } from "@/lib/pray";
+import { useReactions, type ReactionKind } from "@/lib/reactions";
 import { supabase } from "@/lib/supabase";
 
 type Message = { id: string; profile_id: string; body: string; created_at: string };
@@ -25,6 +27,12 @@ export default function Chat() {
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const listRef = useRef<FlatList<Message>>(null);
+  const [menuFor, setMenuFor] = useState<Message | null>(null);
+  const { byMessage, toggle, reload: reloadReactions } = useReactions(
+    { table: "group_message_reactions", column: "group_id", value: group?.groupId ?? null },
+    messages?.map((m) => m.id) ?? [],
+    me,
+  );
 
   const names = new Map(group?.roster.map((m) => [m.profileId, m.fullName]) ?? []);
 
@@ -80,15 +88,20 @@ export default function Chat() {
     setMessages((prev) => (prev?.some((x) => x.id === data.id) ? prev : [data, ...(prev ?? [])]));
   }
 
-  function onLongPress(m: Message) {
+  async function react(m: Message, kind: ReactionKind) {
+    const err = await toggle(m.id, kind);
+    if (err) Alert.alert("Could not react", err);
+  }
+
+  function deleteOwn(m: Message) {
+    openOwnMessageMenu(async () => {
+      await supabase.from("group_messages").delete().eq("id", m.id);
+      setMessages((prev) => prev?.filter((x) => x.id !== m.id) ?? null);
+    });
+  }
+
+  function reportOrBlock(m: Message) {
     if (!me || !ministryId) return;
-    if (m.profile_id === me) {
-      openOwnMessageMenu(async () => {
-        await supabase.from("group_messages").delete().eq("id", m.id);
-        setMessages((prev) => prev?.filter((x) => x.id !== m.id) ?? null);
-      });
-      return;
-    }
     openSafetyMenu({
       ministryId,
       me,
@@ -96,7 +109,10 @@ export default function Chat() {
       targetId: m.id,
       authorId: m.profile_id,
       authorName: names.get(m.profile_id),
-      onBlocked: load,
+      onBlocked: () => {
+        void load();
+        void reloadReactions();
+      },
     });
   }
 
@@ -116,18 +132,36 @@ export default function Chat() {
           renderItem={({ item: m }) => {
             const mine = m.profile_id === me;
             return (
+              <View style={[styles.item, mine && styles.mine]}>
               <Pressable
                 onPress={Keyboard.dismiss}
-                onLongPress={() => onLongPress(m)}
-                accessibilityHint="Long press for options"
+                onLongPress={() => setMenuFor(m)}
+                accessibilityHint="Long press to react or for options"
                 style={[styles.bubble, mine ? [styles.mine, { backgroundColor: c.navy }] : { backgroundColor: c.field, borderColor: c.border, borderWidth: 1 }]}
               >
                 {!mine ? <Text style={{ color: c.accent, fontWeight: "700", fontSize: 13 }}>{names.get(m.profile_id) ?? "Former member"}</Text> : null}
                 <Text style={{ color: c.text, fontSize: 16, lineHeight: 21 }}><Linkify text={m.body} /></Text>
                 <Text style={{ color: c.muted, fontSize: 11, alignSelf: "flex-end" }}>{timeAgo(new Date(m.created_at))}</Text>
               </Pressable>
+              <ReactionRow
+                reactions={byMessage.get(m.id)}
+                me={me}
+                names={(id) => names.get(id)}
+                onToggle={(kind) => void react(m, kind)}
+                alignEnd={mine}
+              />
+              </View>
             );
           }}
+        />
+        <MessageMenu
+          visible={!!menuFor}
+          mine={menuFor?.profile_id === me}
+          myKinds={new Set((menuFor ? byMessage.get(menuFor.id) ?? [] : []).filter((r) => r.profile_id === me).map((r) => r.reaction))}
+          onReact={(kind) => menuFor && void react(menuFor, kind)}
+          onDelete={() => menuFor && deleteOwn(menuFor)}
+          onReport={() => menuFor && reportOrBlock(menuFor)}
+          onClose={() => setMenuFor(null)}
         />
         <View style={[styles.composer, { borderTopColor: c.border, backgroundColor: c.bg }]}>
           <TextInput
@@ -157,7 +191,8 @@ export default function Chat() {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   list: { padding: 12, gap: 8 },
-  bubble: { maxWidth: "85%", borderRadius: 14, padding: 10, gap: 2, alignSelf: "flex-start" },
+  item: { maxWidth: "85%", gap: 4, alignSelf: "flex-start" },
+  bubble: { borderRadius: 14, padding: 10, gap: 2, alignSelf: "flex-start" },
   mine: { alignSelf: "flex-end" },
   composer: { flexDirection: "row", alignItems: "flex-end", gap: 8, padding: 10, borderTopWidth: StyleSheet.hairlineWidth },
   input: { flex: 1, borderWidth: 1, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 10, fontSize: 16, maxHeight: 120 },
